@@ -3,14 +3,8 @@ Avocado is a password manager built using ipfs.
 
 ## Entry format
 {
-    name: <hash>,
-    username: <hash>,
-    password: <hash>,
-    url: <hash>,
-    notes: <hash>
-}
-
-{
+    id: <string>,
+    field: <service|username|password|url|notes>
     nonce: <string>,
     cypertext: <asdfasdf>
 }

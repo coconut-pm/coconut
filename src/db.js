@@ -7,18 +7,24 @@ class DB {
   constructor(id, hash) {
     this.ipfs = new IPFS();
 
+    this._createLog(id, hash);
+  }
+
+  _createLog(id, hash) {
     if (hash) {
-      this.log = Log.fromIpfsHash(ipfs, hash)
+      Log.fromIpfsHash(this.ipfs, hash)
         .then(log => {
           this.log = log;
         });
     } else {
-      this.log = new Log(ipfs, id, LOG_NAME);
+      this.log = new Log(this.ipfs, id, LOG_NAME);
     }
   }
-}
 
-new DB('rascal');
+  getHash() {
+    return Log.getIpfsHash(this.ipfs, this.log);
+  }
+}
 
 // vim: sw=2
 

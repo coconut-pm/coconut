@@ -1,0 +1,19 @@
+{
+  "name": "avocado",
+  "version": "0.0.1",
+  "description": "A password manager on ipfs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oed/avocado.git"
+  },
+  "author": "Joel Torstensson & Oskar Nyberg",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/oed/avocado/issues"
+  },
+  "homepage": "https://github.com/oed/avocado#readme"
+}

@@ -4,21 +4,23 @@ const IPFS = require('ipfs'),
 const LOG_NAME = 'avocado';
 
 class DB {
-  constructor(id, hash) {
+  constructor() {
     this.ipfs = new IPFS();
-
-    this._createLog(id, hash);
   }
 
-  _createLog(id, hash) {
-    if (hash) {
-      Log.fromIpfsHash(this.ipfs, hash)
-        .then(log => {
-          this.log = log;
-        });
-    } else {
-      this.log = new Log(this.ipfs, id, LOG_NAME);
-    }
+  connect(id, hash) {
+    return new Promise((resolve, reject) => {
+      if (hash) {
+        Log.fromIpfsHash(this.ipfs, hash)
+          .then(log => {
+            this.log = log;
+            resolve();
+          });
+      } else {
+        this.log = new Log(this.ipfs, id, LOG_NAME);
+        resolve();
+      }
+    });
   }
 
   getHash() {

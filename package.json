@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/oed/avocado/issues"
   },
-  "homepage": "https://github.com/oed/avocado#readme"
+  "homepage": "https://github.com/oed/avocado#readme",
+  "dependencies": {
+    "orbit-db": "^0.10.4"
+  }
 }

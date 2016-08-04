@@ -6,6 +6,6 @@ Avocado is a password manager built using ipfs.
     id: <string>,
     field: <service|username|password|url|notes>
     nonce: <string>,
-    cypertext: <asdfasdf>
+    cypertext: <dyomh>
 }
 

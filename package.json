@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/oed/avocado#readme",
   "dependencies": {
-    "orbit-db": "^0.10.4",
+    "ipfs-log": "^1.4.9",
     "tweetnacl": "^0.14.3"
   }
 }

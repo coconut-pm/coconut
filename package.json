@@ -20,5 +20,9 @@
     "ipfs": "^0.14.1",
     "ipfs-log": "^1.4.9",
     "tweetnacl": "^0.14.3"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocca": "^1.0.3"
   }
 }

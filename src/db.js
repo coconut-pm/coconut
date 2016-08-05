@@ -1,6 +1,6 @@
 const IPFS = require('ipfs'),
-      Log = require('ipfs-log');
-      utils = require('./utils')
+      Log = require('ipfs-log'),
+      utils = require('./utils');
 
 const LOG_NAME = 'avocado';
 

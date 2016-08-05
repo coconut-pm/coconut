@@ -50,7 +50,6 @@ class DB {
     });
 
     entries = entries.filter(entry => !entry.removed);
-
     return entries;
   }
 

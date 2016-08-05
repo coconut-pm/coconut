@@ -28,5 +28,7 @@ class DB {
   }
 }
 
+module.exports = DB;
+
 // vim: sw=2
 

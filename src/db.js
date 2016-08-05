@@ -38,16 +38,19 @@ class DB {
 
   getEntry(id) {
     let entry = {};
-    this.log.items.forEach(item => {
-      if (item.payload.id === id) {
+    this.log.items.filter(item => item.payload.id === id)
+      .forEach(item => {
         if (!item.payload.field) {
           entry.id = id;
         } else {
           // TODO: Replace value with decryption of item.cipher.
           entry[item.payload.field] = item.payload.value;
         }
-      }
-    });
+      });
+
+    if (Object.keys(entry).length === 0) {
+      throw new Error('Entry with id "' + id + '" does not exist')
+    }
     return entry;
   }
 

@@ -43,6 +43,10 @@ describe('Communication with IPFS', function() {
         done();
       })
   });
+
+  it('should throw if trying to access non-existent id', function() {
+    expect(db.getEntry.bind(db, 1)).to.throw(Error);
+  });
 });
 
 // vim: sw=2

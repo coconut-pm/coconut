@@ -23,6 +23,40 @@ class DB {
     });
   }
 
+  newEntry() {
+    let id = this._getNewId();
+    let entry = { id };
+    this.log.add(entry);
+    return id;
+  }
+
+  _getNewId() {
+    let ids = this.log.items.map(item => item.id);
+    let max = ids.length > 0 ? Math.max(...ids) : 0;
+    return max + 1;
+  }
+
+  getEntry(id) {
+    let entry = {};
+    this.log.items.forEach(item => {
+      if (item.payload.id === id) {
+        if (!item.payload.field) {
+          entry.id = id;
+        } else {
+          // TODO: Replace value with decryption of item.cipher.
+          entry[item.payload.field] = item.payload.value;
+        }
+      }
+    });
+    return entry;
+  }
+
+  updateEntry(id, field, value) {
+    // TODO: Replace value with encrypted version.
+    let update = { id, field, value };
+    return this.log.add(update);
+  }
+
   getHash() {
     return Log.getIpfsHash(this.ipfs, this.log);
   }

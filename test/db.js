@@ -68,6 +68,18 @@ describe('Communication with IPFS', function() {
         done();
       });
   });
+
+  it('should remove an entry', function(done) {
+    db.newEntry()
+      .then(id => {
+        db.updateEntry(id, 'testField', 'testValue')
+          .then(db.removeEntry.bind(db, id))
+          .then(() => {
+            expect(db.entries).to.be.empty;
+            done();
+          })
+      });
+  });
 });
 
 // vim: sw=2

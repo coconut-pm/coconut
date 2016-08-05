@@ -48,6 +48,9 @@ class DB {
       entries[id] = entries[id] || {};
       this._appendItemToEntry(entries[id], item);
     });
+
+    entries = entries.filter(entry => !entry.removed);
+
     return entries;
   }
 
@@ -56,7 +59,7 @@ class DB {
     this.log.items.filter(item => item.payload.id === id)
       .forEach(this._appendItemToEntry.bind(this, entry));
 
-    if (Object.keys(entry).length === 0) {
+    if (Object.keys(entry).length === 0 || entry.removed) {
       throw new Error('Entry with id "' + id + '" does not exist')
     }
     return entry;
@@ -75,6 +78,10 @@ class DB {
     // TODO: Replace value with encrypted version.
     let update = { id, field, value };
     return this.log.add(update);
+  }
+
+  removeEntry(id) {
+    return this.updateEntry(id, 'removed', true);
   }
 
   getHash() {

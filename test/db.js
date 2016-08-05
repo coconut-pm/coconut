@@ -23,25 +23,29 @@ describe('Communication with IPFS', function() {
   });
 
   it('should add an item to an entry', function(done) {
-    let id = db.newEntry();
-    db.updateEntry(id, 'testField', 'testValue')
-      .then(() => {
-        let entry = db.getEntry(id);
-        expect(entry['testField']).to.equal('testValue');
-        done();
-      })
+    db.newEntry()
+      .then(id => {
+        db.updateEntry(id, 'testField', 'testValue')
+          .then(() => {
+            let entry = db.getEntry(id);
+            expect(entry['testField']).to.equal('testValue');
+            done();
+          });
+      });
   });
 
   it('should update an item in an entry', function(done) {
-    let id = db.newEntry();
-    let field = 'testField';
-    db.updateEntry(id, field, 'testValue1')
-      .then(db.updateEntry.bind(db, id, field, 'testValue2'))
-      .then(() => {
-        let entry = db.getEntry(id);
-        expect(entry['testField']).to.equal('testValue2');
-        done();
-      })
+    db.newEntry()
+      .then(id => {
+        let field = 'testField';
+        db.updateEntry(id, field, 'testValue1')
+          .then(db.updateEntry.bind(db, id, field, 'testValue2'))
+          .then(() => {
+            let entry = db.getEntry(id);
+            expect(entry['testField']).to.equal('testValue2');
+            done();
+          });
+      });
   });
 
   it('should throw if trying to access non-existent id', function() {
@@ -52,7 +56,18 @@ describe('Communication with IPFS', function() {
     expect(db.getEntry).to.throw(Error);
     expect(db.updateEntry).to.throw(Error);
     expect(db.updateEntry).to.throw(Error);
-  })
+  });
+
+  it('should add and return the correct number of entries', function(done) {
+    db.newEntry()
+      .then(db.newEntry.bind(db))
+      .then(db.newEntry.bind(db))
+      .then(db.newEntry.bind(db))
+      .then(() => {
+        expect(db.entries).to.have.length(4);
+        done();
+      });
+  });
 });
 
 // vim: sw=2

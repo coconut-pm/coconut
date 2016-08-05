@@ -25,34 +25,50 @@ class DB {
   }
 
   newEntry() {
-    let id = this._getNewId();
-    let entry = { id };
-    this.log.add(entry);
-    return id;
+    return new Promise((resolve, reject) => {
+      let id = this._getNewId();
+      let entry = { id };
+      this.log.add(entry)
+        .then(() => {
+          resolve(id);
+        });
+    });
   }
 
   _getNewId() {
-    let ids = this.log.items.map(item => item.id);
-    let max = ids.length > 0 ? Math.max(...ids) : 0;
-    return max + 1;
+    let ids = this.log.items.map(item => item.payload.id);
+    let id = ids.length > 0 ? Math.max(...ids) + 1 : 0;
+    return id;
+  }
+
+  get entries() {
+    let entries = [];
+    this.log.items.forEach(item => {
+      let id = item.payload.id;
+      entries[id] = entries[id] || {};
+      this._appendItemToEntry(entries[id], item);
+    });
+    return entries;
   }
 
   getEntry(id = mandatory()) {
     let entry = {};
     this.log.items.filter(item => item.payload.id === id)
-      .forEach(item => {
-        if (!item.payload.field) {
-          entry.id = id;
-        } else {
-          // TODO: Replace value with decryption of item.cipher.
-          entry[item.payload.field] = item.payload.value;
-        }
-      });
+      .forEach(this._appendItemToEntry.bind(this, entry));
 
     if (Object.keys(entry).length === 0) {
       throw new Error('Entry with id "' + id + '" does not exist')
     }
     return entry;
+  }
+
+  _appendItemToEntry(entry, item) {
+    if (!item.payload.field) {
+      entry.id = item.payload.id;
+    } else if (item.payload.value) {
+      // TODO: Replace value with decryption of item.cipher.
+      entry[item.payload.field] = item.payload.value;
+    }
   }
 
   updateEntry(id = mandatory(), field = mandatory(), value = mandatory()) {

@@ -1,5 +1,6 @@
 const IPFS = require('ipfs'),
       Log = require('ipfs-log');
+      utils = require('./utils')
 
 const LOG_NAME = 'avocado';
 
@@ -8,7 +9,7 @@ class DB {
     this.ipfs = new IPFS();
   }
 
-  connect(id, hash) {
+  connect(id = mandatory(), hash) {
     return new Promise((resolve, reject) => {
       if (hash) {
         Log.fromIpfsHash(this.ipfs, hash)
@@ -36,7 +37,7 @@ class DB {
     return max + 1;
   }
 
-  getEntry(id) {
+  getEntry(id = mandatory()) {
     let entry = {};
     this.log.items.filter(item => item.payload.id === id)
       .forEach(item => {
@@ -54,7 +55,7 @@ class DB {
     return entry;
   }
 
-  updateEntry(id, field, value) {
+  updateEntry(id = mandatory(), field = mandatory(), value = mandatory()) {
     // TODO: Replace value with encrypted version.
     let update = { id, field, value };
     return this.log.add(update);

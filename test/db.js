@@ -47,6 +47,12 @@ describe('Communication with IPFS', function() {
   it('should throw if trying to access non-existent id', function() {
     expect(db.getEntry.bind(db, 1)).to.throw(Error);
   });
+
+  it('should throw if calling with missing parameters', function() {
+    expect(db.getEntry).to.throw(Error);
+    expect(db.updateEntry).to.throw(Error);
+    expect(db.updateEntry).to.throw(Error);
+  })
 });
 
 // vim: sw=2

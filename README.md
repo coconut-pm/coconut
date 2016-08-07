@@ -21,5 +21,4 @@ value = {
     removed: <boolean>
 }
 ```
-Where removed is optional.
 

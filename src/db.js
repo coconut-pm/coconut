@@ -28,10 +28,7 @@ class DB {
     return new Promise((resolve, reject) => {
       let id = this._getNewId();
       let entry = { id };
-      this.log.add(entry)
-        .then(() => {
-          resolve(id);
-        });
+      this.log.add(entry).then(() => resolve(id));
     });
   }
 

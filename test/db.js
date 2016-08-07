@@ -25,7 +25,7 @@ describe('Communication with IPFS', function() {
   it('should add an item to an entry', function(done) {
     db.newEntry()
       .then(id => {
-        db.updateEntry(id, 'testField', 'testValue')
+        db.updateField(id, 'testField', 'testValue')
           .then(() => {
             let entry = db.getEntry(id);
             expect(entry['testField']).to.equal('testValue');
@@ -38,8 +38,8 @@ describe('Communication with IPFS', function() {
     db.newEntry()
       .then(id => {
         let field = 'testField';
-        db.updateEntry(id, field, 'testValue1')
-          .then(db.updateEntry.bind(db, id, field, 'testValue2'))
+        db.updateField(id, field, 'testValue1')
+          .then(db.updateField.bind(db, id, field, 'testValue2'))
           .then(() => {
             let entry = db.getEntry(id);
             expect(entry['testField']).to.equal('testValue2');
@@ -54,8 +54,8 @@ describe('Communication with IPFS', function() {
 
   it('should throw if calling with missing parameters', function() {
     expect(db.getEntry).to.throw(Error);
-    expect(db.updateEntry).to.throw(Error);
-    expect(db.updateEntry).to.throw(Error);
+    expect(db.updateField).to.throw(Error);
+    expect(db.updateField).to.throw(Error);
   });
 
   it('should add and return the correct number of entries', function(done) {
@@ -72,10 +72,24 @@ describe('Communication with IPFS', function() {
   it('should remove an entry', function(done) {
     db.newEntry()
       .then(id => {
-        db.updateEntry(id, 'testField', 'testValue')
+        db.updateField(id, 'testField', 'testValue')
           .then(db.removeEntry.bind(db, id))
           .then(() => {
             expect(db.entries).to.be.empty;
+            done();
+          })
+      });
+  });
+
+  it('should remove a value', function(done) {
+    db.newEntry()
+      .then(id => {
+        db.updateField(id, 'testField1', 'testValue1')
+          .then(db.updateField.bind(db, id, 'testField2', 'testValue2'))
+          .then(db.removeField.bind(db, id, 'testField2'))
+          .then(() => {
+            expect(db.getEntry(id).testField1).to.not.be.undefined;
+            expect(db.getEntry(id).testField2).to.be.undefined;
             done();
           })
       });

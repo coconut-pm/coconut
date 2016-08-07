@@ -94,6 +94,19 @@ describe('Communication with IPFS', function() {
           })
       });
   });
+
+  it('should allow setting a value after it has been removed', function(done) {
+    db.newEntry()
+      .then(id => {
+        db.updateField(id, 'testField', 'testValue1')
+          .then(db.removeField.bind(db, id, 'testField'))
+          .then(db.updateField.bind(db, id, 'testField', 'testValue2'))
+          .then(() => {
+            expect(db.getEntry(id).testField).to.equal('testValue2');
+            done();
+          })
+      });
+  });
 });
 
 // vim: sw=2

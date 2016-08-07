@@ -65,22 +65,25 @@ class DB {
   }
 
   _appendItemToEntry(entry, item) {
-    if (!item.payload.field) {
+    if (item.payload.removed) {
+      entry.removed = true;
+    } else if (!item.payload.field) {
       entry.id = item.payload.id;
     } else if (item.payload.value) {
       // TODO: Replace value with decryption of item.cipher.
-      entry[item.payload.field] = item.payload.value;
+      entry[item.payload.field] = item.payload.value.value;
     }
   }
 
   updateEntry(id = mandatory(), field = mandatory(), value = mandatory()) {
     // TODO: Replace value with encrypted version.
-    let update = { id, field, value };
+    let update = { id, field, value: { value } };
     return this.log.add(update);
   }
 
   removeEntry(id) {
-    return this.updateEntry(id, 'removed', true);
+    let update = { id, removed: true };
+    return this.log.add(update);
   }
 
   getHash() {

@@ -1,5 +1,6 @@
 const IPFS = require('ipfs-api'),
       Log = require('ipfs-log'),
+      Entry = require('../node_modules/ipfs-log/src/entry'),
       utils = require('./utils');
 
 const LOG_NAME = 'avocado';
@@ -12,7 +13,7 @@ class DB {
   connect(id = mandatory(), hash) {
     return new Promise((resolve, reject) => {
       if (hash) {
-        this._fromHash(hash).then(resolve);
+        this._fromHash(id, hash).then(resolve);
       } else {
         this.log = new Log(this.ipfs, id, LOG_NAME);
         resolve();
@@ -89,15 +90,29 @@ class DB {
   }
 
   getHash() {
-    return Log.getIpfsHash(this.ipfs, this.log);
+    return this.log.items[this.log.items.length - 1].hash;
   }
 
-  _fromHash(hash) {
+  _fromHash(id, hash) {
     return new Promise((resolve, reject) => {
-      Log.fromIpfsHash(this.ipfs, hash)
-        .then(log => {
-          this.log = log;
+      this._retreiveEntries(hash)
+        .then(entries => {
+          this.log = new Log(this.ipfs, id, LOG_NAME, { items: entries });
           resolve();
+        });
+    });
+  }
+
+  _retreiveEntries(hash, entries = []) {
+    return new Promise((resolve, reject) => {
+      Entry.fromIpfsHash(this.ipfs, hash)
+        .then(entry => {
+          entries.push(entry);
+          if (entry.next.length) {
+            this._retreiveEntries(entry.next, entries).then(resolve);
+          } else {
+            resolve(entries);
+          }
         });
     });
   }

@@ -1,4 +1,4 @@
-const IPFS = require('ipfs'),
+const IPFS = require('ipfs-api'),
       Log = require('ipfs-log'),
       utils = require('./utils');
 

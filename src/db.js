@@ -12,11 +12,7 @@ class DB {
   connect(id = mandatory(), hash) {
     return new Promise((resolve, reject) => {
       if (hash) {
-        Log.fromIpfsHash(this.ipfs, hash)
-          .then(log => {
-            this.log = log;
-            resolve();
-          });
+        this._fromHash(hash).then(resolve);
       } else {
         this.log = new Log(this.ipfs, id, LOG_NAME);
         resolve();
@@ -94,6 +90,16 @@ class DB {
 
   getHash() {
     return Log.getIpfsHash(this.ipfs, this.log);
+  }
+
+  _fromHash(hash) {
+    return new Promise((resolve, reject) => {
+      Log.fromIpfsHash(this.ipfs, hash)
+        .then(log => {
+          this.log = log;
+          resolve();
+        });
+    });
   }
 }
 

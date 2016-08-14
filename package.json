@@ -25,5 +25,8 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "mocca": "^1.0.3"
+  },
+  "bin": {
+      "avocado": "./bin/cli.js"
   }
 }

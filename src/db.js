@@ -97,7 +97,7 @@ class DB {
     return new Promise((resolve, reject) => {
       this._retreiveEntries(hash)
         .then(entries => {
-          this.log = new Log(this.ipfs, id, LOG_NAME, { items: entries });
+          this.log = new Log(this.ipfs, id, LOG_NAME, { items: entries.reverse() });
           resolve();
         });
     });

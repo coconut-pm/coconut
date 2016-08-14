@@ -22,6 +22,18 @@ describe('Communication with IPFS', function() {
       });
   });
 
+  it('should recover items in the correct order', function(done) {
+    let db2 = new DB();
+    db.log.add('testString1')
+      .then(db.log.add.bind(db.log, 'testString2'))
+      .then(db.getHash.bind(db))
+      .then(db2.connect.bind(db2, 'test'))
+      .then(() => {
+        expect(db.log.items[0].payload).to.equal(db2.log.items[0].payload);
+        done();
+      });
+  });
+
   it('should add an item to an entry', function(done) {
     db.newEntry()
       .then(id => {

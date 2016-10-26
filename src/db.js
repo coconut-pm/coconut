@@ -13,7 +13,9 @@ class DB {
   }
 
   _registerListeners() {
-    this.store.events.on('write', console.log.bind(console));
+    this.store.events.on('write', (dbname, hash) => {
+      this._hash = hash;
+    });
   }
 
   sync(hash = mandatory()) {
@@ -26,26 +28,18 @@ class DB {
   }
 
   remove(hash = mandatory()) {
-    return new Promise((resolve, reject) => {
-      this.store.remove(hash, hash => {
-        this._hash = hash;
-        resolve();
-      });
-    });
+    return this.store.remove(hash);
   }
 
   update(hash = mandatory(), entry = mandatory()) {
     return remove(hash)
-      .then(() => this.add(entry))
+      .then(this.add.bind(this, entry));
   }
 
   get entries() {
     return this.store.iterator({ limit: -1 })
-      .collect();
-  }
-
-  get(hash = mandatory()) {
-    return this.store.get(hash);
+      .collect()
+      .map(e => e.payload.value);
   }
 
   get hash() {

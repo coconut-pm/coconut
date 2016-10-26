@@ -2,10 +2,13 @@ const IPFS = require('ipfs-api'),
       FeedStore = require('orbit-db-feedstore'),
       utils = require('./utils');
 
+const enc = require('./encryption.js')
+
 const DB_NAME = 'coconut';
 
 class DB {
-  constructor(id = mandatory()) {
+  constructor(id = mandatory(), password = mandatory()) {
+    this.key = enc.expandKey()
     this.ipfs = new IPFS();
     this.store = new FeedStore(this.ipfs, id, DB_NAME);
 
@@ -24,7 +27,8 @@ class DB {
   }
 
   add(entry = mandatory()) {
-    return this.store.add(entry);
+    let encEntry = enc.encryptJson(entry, key)
+    return this.store.add(encEntry);
   }
 
   remove(hash = mandatory()) {
@@ -39,7 +43,10 @@ class DB {
   get entries() {
     return this.store.iterator({ limit: -1 })
       .collect()
-      .map(e => e.payload.value);
+      .map(e => {
+        let encEntry = e.payload.value
+        return enc.decryptJson(encEntry.ciphertext, encEntry.nonce, key)
+      })
   }
 
   get hash() {

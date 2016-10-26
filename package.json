@@ -19,6 +19,7 @@
   "dependencies": {
     "ipfs": "^0.14.1",
     "ipfs-api": "^6.0.3",
+    "orbit-db-feedstore": "^0.1.6",
     "tweetnacl": "^0.14.3"
   },
   "devDependencies": {

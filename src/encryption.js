@@ -1,21 +1,25 @@
-const nacl = require('tweetnacl');
-
-
+const nacl      = require('tweetnacl')
+const naclUtil  = require('tweetnacl-util')
 
 class Encryption {
-  static encryptString(msg, key) {
+  static encryptJson(json, key) {
     let nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
-    let msgUint8Array = nacl.util.decodeUTF8(msg);
-    let encryptedMsg = nacl.secretbox(msgUint8Array, res.nonce, key);
+    let msgUint8Array = naclUtil.decodeUTF8(JSON.stringify(json))
+    let encryptedMsg = nacl.secretbox(msgUint8Array, nonce, key)
     return {
-      nonce: nacl.util.encodeBase64(nonce),
-      ciphertext: nacl.util.encodeBase64(encryptedMsg)
-    };
+      nonce: naclUtil.encodeBase64(nonce),
+      ciphertext: naclUtil.encodeBase64(encryptedMsg)
+    }
   }
 
-  static decryptString(ciphertext, nonce, key) {
-    nonce = nacl.util.decodeBase64(nonce);
-    ciphertext = nacl.util.decodeBase64(ciphertext);
-    return nacl.secretbox.open(ciphertext, nonce, key);
+  static decryptJson(ciphertext, nonce, key) {
+    nonce = naclUtil.decodeBase64(nonce)
+    ciphertext = naclUtil.decodeBase64(ciphertext)
+    let decryptedMsg = nacl.secretbox.open(ciphertext, nonce, key)
+    return JSON.parse(naclUtil.encodeUTF8(decryptedMsg))
+  }
+
+  static expandKey(keyString) {
+    return nacl.hash(naclUtil.decodeUTF8(keyString)).slice(32)
   }
 }

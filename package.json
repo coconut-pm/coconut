@@ -1,5 +1,5 @@
 {
-  "name": "avocado",
+  "name": "coconut",
   "version": "0.0.1",
   "description": "A password manager on ipfs",
   "main": "index.js",
@@ -20,13 +20,15 @@
     "ipfs": "^0.14.1",
     "ipfs-api": "^6.0.3",
     "orbit-db-feedstore": "^0.1.6",
-    "tweetnacl": "^0.14.3"
+    "ipfs-log": "^1.4.9",
+    "tweetnacl": "^0.14.3",
+    "tweetnacl-util": "^0.13.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "mocca": "^1.0.3"
   },
   "bin": {
-      "avocado": "./bin/cli.js"
+    "coconut": "./bin/cli.js"
   }
 }

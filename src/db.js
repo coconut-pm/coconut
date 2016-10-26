@@ -8,7 +8,7 @@ const DB_NAME = 'coconut';
 
 class DB {
   constructor(id = mandatory(), password = mandatory()) {
-    this.key = enc.expandKey()
+    this.key = enc.expandKey(password);
     this.ipfs = new IPFS();
     this.store = new FeedStore(this.ipfs, id, DB_NAME);
 

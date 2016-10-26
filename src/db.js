@@ -47,13 +47,6 @@ class DB {
   }
 }
 
-let db = new DB('oskar');
-db.sync('QmRtLnSzSXBWcegA6LTj5fVKpvNvwsVmRB4RoEEZkc4Qz5')
-  .then(() => {
-    //db.add("oed");
-    console.log(db.entries);
-  })
-
 module.exports = DB;
 
 // vim: sw=2

@@ -2,35 +2,63 @@ const IPFS = require('ipfs-api'),
       FeedStore = require('orbit-db-feedstore'),
       utils = require('./utils');
 
+const DB_NAME = 'coconut';
+
 class DB {
-  constructor() {
+  constructor(id = mandatory()) {
     this.ipfs = new IPFS();
+    this.store = new FeedStore(this.ipfs, id, DB_NAME);
+
+    this._registerListeners();
   }
 
-  connect(id = mandatory(), hash) {
+  _registerListeners() {
+    this.store.events.on('write', console.log.bind(console));
   }
 
-  newEntry() {
+  sync(hash = mandatory()) {
+    this._hash = hash;
+    return this.store.sync(hash);
+  }
+
+  add(entry = mandatory()) {
+    return this.store.add(entry);
+  }
+
+  remove(hash = mandatory()) {
+    return new Promise((resolve, reject) => {
+      this.store.remove(hash, hash => {
+        this._hash = hash;
+        resolve();
+      });
+    });
+  }
+
+  update(hash = mandatory(), entry = mandatory()) {
+    return remove(hash)
+      .then(() => this.add(entry))
   }
 
   get entries() {
+    return this.store.iterator({ limit: -1 })
+      .collect();
   }
 
-  getEntry(id = mandatory()) {
+  get(hash = mandatory()) {
+    return this.store.get(hash);
   }
 
-  updateField(id = mandatory(), field = mandatory(), value = mandatory()) {
-  }
-
-  removeField(id = mandatory(), field = mandatory()) {
-  }
-
-  removeEntry(id = mandatory()) {
-  }
-
-  getHash() {
+  get hash() {
+    return this._hash;
   }
 }
+
+let db = new DB('oskar');
+db.sync('QmRtLnSzSXBWcegA6LTj5fVKpvNvwsVmRB4RoEEZkc4Qz5')
+  .then(() => {
+    //db.add("oed");
+    console.log(db.entries);
+  })
 
 module.exports = DB;
 

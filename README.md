@@ -1,24 +1,25 @@
-# Avocado
-Avocado is a password manager built using ipfs.
+# Coconut
+Coconut is a password manager built using ipfs.
 
 ## Entry format
-```
-entry = {
-    id: <integer>,
-    field: <service|username|password|url|notes>,
-    value: <value>,
-}
-entry = {
-    id: <integer>,
-    removed: <boolean>
-}
 
-value = {
-    nonce: <string>,
-    ciphertext: <dyomh>,
+
+### Decrypted entry
+```
+{
+  service: <string>,
+  username: <string>,
+  password: <string>,
+  url: <string>,
+  notes: <string>
 }
-value = {
-    removed: <boolean>
+```
+
+### Encrypted entry
+```
+{
+  nonce: <string>,
+  ciphertext: <dyomh>,
 }
 ```
 

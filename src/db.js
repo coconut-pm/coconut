@@ -31,7 +31,14 @@ class DB {
   }
 
   remove(hash = mandatory()) {
-    return this.store.remove(hash)
+    return new Promise((resolve, reject) => {
+      if (this.get(hash)) {
+        this.store.remove(hash)
+          .then(resolve)
+      } else {
+        reject()
+      }
+    })
   }
 
   update(hash = mandatory(), entry = mandatory()) {
@@ -41,7 +48,7 @@ class DB {
 
   get(hash = mandatory()) {
     let e = this.store.get(hash)
-    return {
+    return e === undefined ? undefined : {
       hash: e.hash,
       value: this._decrypt(e)
     }

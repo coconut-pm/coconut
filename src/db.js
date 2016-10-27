@@ -1,4 +1,5 @@
-const IPFS = require('ipfs-api'),
+const IPFS = require('ipfs'),
+      IPFS_api = require('ipfs-api'),
       FeedStore = require('orbit-db-feedstore'),
       utils = require('./utils'),
       Encryption = require('./encryption.js')
@@ -6,9 +7,9 @@ const IPFS = require('ipfs-api'),
 const DB_NAME = 'coconut'
 
 class DB {
-  constructor(id = mandatory(), password = mandatory()) {
+  constructor(id = mandatory(), password = mandatory(), useIpfsApi) {
     this.key = Encryption.expandKey(password)
-    let ipfs = new IPFS()
+    let ipfs = useIpfsApi ? new IPFS_api() : new IPFS()
     this.store = new FeedStore(ipfs, id, DB_NAME)
 
     this._registerListeners()

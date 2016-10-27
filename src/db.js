@@ -35,7 +35,7 @@ class DB {
   }
 
   update(hash = mandatory(), entry = mandatory()) {
-    return remove(hash)
+    return this.remove(hash)
       .then(this.add.bind(this, entry))
   }
 

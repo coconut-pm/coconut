@@ -45,6 +45,10 @@ describe('Communication with IPFS', function() {
       })
   })
 
+  it('should return undefined if hash doesn\'t exists', function() {
+    expect(db.get('nonexistenthash')).to.be.undefined
+  })
+
   it('should remove an object', function(done) {
     db.add({a: 'b'})
       .then(() => {
@@ -52,6 +56,13 @@ describe('Communication with IPFS', function() {
         return db.remove(entry0.hash)
       }).then(() => {
         expect(db.entries).to.be.empty
+        done()
+      })
+  })
+
+  it('should reject when trying to delete non-existent hash', function(done) {
+    db.remove('nonexistenthash')
+      .catch(() => {
         done()
       })
   })
@@ -68,6 +79,13 @@ describe('Communication with IPFS', function() {
       })
   })
 
+  it('should reject when trying to update non-existent hash', function(done) {
+    db.remove('nonexistenthash', {test: 'test'})
+      .catch(() => {
+        done()
+      })
+  })
+
   it('should sync from hash', function(done) {
     let db2
     db.add({a: 'b'})
@@ -76,6 +94,13 @@ describe('Communication with IPFS', function() {
         return db2.sync(db.hash)
       }).then(() => {
         expect(db2.entries).to.deep.equal(db.entries)
+        done()
+      })
+  })
+
+  it('should reject when syncing from non-existent hash', function(done) {
+    db.sync('nonexistenthash')
+      .catch(() => {
         done()
       })
   })

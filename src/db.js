@@ -50,12 +50,11 @@ class DB {
   get entries() {
     return this.store.iterator({ limit: -1 })
       .collect()
-      .map(e => {
-        return {
+      .map(e => ({
           hash: e.hash,
           value: this._decrypt(e)
-        }
-      })
+        })
+      )
   }
 
   _decrypt(e) {

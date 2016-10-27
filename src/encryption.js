@@ -23,3 +23,6 @@ class Encryption {
     return nacl.hash(naclUtil.decodeUTF8(keyString)).slice(32)
   }
 }
+
+module.exports = Encryption;
+

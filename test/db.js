@@ -1,125 +1,46 @@
 const expect = require('chai').expect,
-      DB = require('../src/db');
+      DB = require('../src/db')
 
 describe('Communication with IPFS', function() {
-  let db;
+  let db
 
-  beforeEach(function(done) {
-    db = new DB();
-    db.connect('test').then(done);
-  });
+  before(function() {
+    db = new DB('testuser', 'testpassword')
+  })
 
-  it('should find previous entries when starting with a hash', function(done) {
-    let db2 = new DB();
-    db.log.add('testString')
-      .then(db.getHash.bind(db))
-      .then(db2.connect.bind(db2, 'test'))
+  after(function() {
+    let entries = db.entries
+    entries.forEach(({hash, value}) => {
+      db.remove(hash)
+    })
+  })
+
+  it('should start with an empty list of objects', function() {
+    let entries = db.entries
+    expect(entries).to.be.instanceof(Array)
+    expect(entries).to.be.empty
+  })
+
+  it('should add an object', function(done) {
+    let value = {a: 'b'}
+    db.add(value)
       .then(() => {
-        let item1 = db.log.items[0].payload;
-        let item2 = db2.log.items[0].payload;
-        expect(item1).to.equal(item2);
-        done();
-      });
-  });
+        let entries = db.entries
+        expect(entries).to.have.lengthOf(1)
+        expect(entries[0]).to.have.property('hash')
+        expect(entries[0]).to.have.property('value')
+        expect(entries[0].value).to.deep.equal(value)
+        done()
+      })
+  })
 
-  it('should recover items in the correct order', function(done) {
-    let db2 = new DB();
-    db.log.add('testString1')
-      .then(db.log.add.bind(db.log, 'testString2'))
-      .then(db.getHash.bind(db))
-      .then(db2.connect.bind(db2, 'test'))
-      .then(() => {
-        expect(db.log.items[0].payload).to.equal(db2.log.items[0].payload);
-        done();
-      });
-  });
-
-  it('should add an item to an entry', function(done) {
-    db.newEntry()
-      .then(id => {
-        db.updateField(id, 'testField', 'testValue')
-          .then(() => {
-            let entry = db.getEntry(id);
-            expect(entry['testField']).to.equal('testValue');
-            done();
-          });
-      });
-  });
-
-  it('should update an item in an entry', function(done) {
-    db.newEntry()
-      .then(id => {
-        let field = 'testField';
-        db.updateField(id, field, 'testValue1')
-          .then(db.updateField.bind(db, id, field, 'testValue2'))
-          .then(() => {
-            let entry = db.getEntry(id);
-            expect(entry['testField']).to.equal('testValue2');
-            done();
-          });
-      });
-  });
-
-  it('should throw if trying to access non-existent id', function() {
-    expect(db.getEntry.bind(db, 1)).to.throw(Error);
-  });
-
-  it('should throw if calling with missing parameters', function() {
-    expect(db.getEntry).to.throw(Error);
-    expect(db.updateField).to.throw(Error);
-    expect(db.updateField).to.throw(Error);
-  });
-
-  it('should add and return the correct number of entries', function(done) {
-    db.newEntry()
-      .then(db.newEntry.bind(db))
-      .then(db.newEntry.bind(db))
-      .then(db.newEntry.bind(db))
-      .then(() => {
-        expect(db.entries).to.have.length(4);
-        done();
-      });
-  });
-
-  it('should remove an entry', function(done) {
-    db.newEntry()
-      .then(id => {
-        db.updateField(id, 'testField', 'testValue')
-          .then(db.removeEntry.bind(db, id))
-          .then(() => {
-            expect(db.entries).to.be.empty;
-            done();
-          })
-      });
-  });
-
-  it('should remove a value', function(done) {
-    db.newEntry()
-      .then(id => {
-        db.updateField(id, 'testField1', 'testValue1')
-          .then(db.updateField.bind(db, id, 'testField2', 'testValue2'))
-          .then(db.removeField.bind(db, id, 'testField2'))
-          .then(() => {
-            expect(db.getEntry(id).testField1).to.not.be.undefined;
-            expect(db.getEntry(id).testField2).to.be.undefined;
-            done();
-          })
-      });
-  });
-
-  it('should allow setting a value after it has been removed', function(done) {
-    db.newEntry()
-      .then(id => {
-        db.updateField(id, 'testField', 'testValue1')
-          .then(db.removeField.bind(db, id, 'testField'))
-          .then(db.updateField.bind(db, id, 'testField', 'testValue2'))
-          .then(() => {
-            expect(db.getEntry(id).testField).to.equal('testValue2');
-            done();
-          })
-      });
-  });
-});
+  it('should get object by hash', function() {
+    let entry0 = db.entries[0]
+    let hash = entry0.hash
+    let entry = db.get(hash)
+    expect(entry).to.deep.equal(entry0)
+  })
+})
 
 // vim: sw=2
 

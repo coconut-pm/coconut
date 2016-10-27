@@ -24,5 +24,5 @@ class Encryption {
   }
 }
 
-module.exports = Encryption;
+module.exports = Encryption
 

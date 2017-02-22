@@ -1,11 +1,40 @@
 #!/usr/bin/env node
 
-const Coconut = require('../src/coconut'),
+const fs = require('fs'),
+      os = require('os'),
+      Coconut = require('../src/coconut'),
       program = require('commander'),
       prompt = require('prompt'),
       packageJson = require('../package.json')
 
+const HASH_FILE = os.homedir() + '/.local/share/coconut'
+
 prompt.message = ''
+
+let coconut
+prompt.get({
+    properties: {
+      masterPassword: {
+        hidden: true,
+        message: 'Master password'
+      },
+    }
+  }, (error, result) => {
+    coconut = new Coconut(result.masterPassword)
+    fs.readFile(HASH_FILE, (error, data) => {
+      if (error) {
+        program.parse(process.argv)
+      } else {
+        coconut.sync(data.toString().trim()).then(() => {
+          program.parse(process.argv)
+        })
+      }
+    })
+  })
+
+function writeHash(hash, callback) {
+  fs.writeFile(HASH_FILE, hash, callback)
+}
 
 program
   .version(packageJson.version)
@@ -16,11 +45,6 @@ program
   .action(() => {
     prompt.get({
       properties: {
-        masterPassword: {
-          hidden: true,
-          replace: '*',
-          message: 'Master password'
-        },
         service: {
           required: true
         },
@@ -29,17 +53,24 @@ program
         },
         password: {
           hidden: true,
-          replace: '*'
         },
         url: {},
         notes: {}
       }
     }, (err, result) => {
-      let coconut = new Coconut(masterPassword)
+      coconut.addEntry(result.service, result.username, result.password,
+          result.url, result.notes).then(() => {
+        writeHash(coconut.hash, console.log.bind(console))
+      })
     })
   });
 
-program.parse(process.argv)
+program
+  .command('list')
+  .description('List of all entries')
+  .action(() => {
+    console.log(coconut.entries)
+  })
 
 // vim: sw=2
 

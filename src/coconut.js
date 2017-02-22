@@ -36,6 +36,6 @@ class Coconut extends DB {
 
 }
 
-module.exports = DB
+module.exports = Coconut
 
 // vim: sw=2

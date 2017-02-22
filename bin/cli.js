@@ -1,18 +1,45 @@
 #!/usr/bin/env node
 
-const DB = require('../src/db'),
+const Coconut = require('../src/coconut'),
       program = require('commander'),
-      prompt = require('prompt')
+      prompt = require('prompt'),
+      packageJson = require('../package.json')
+
+prompt.message = ''
 
 program
-  .version('0.0.1')
+  .version(packageJson.version)
 
 program
-  .command('get <entry>')
-  .description('Returns an entry by either it\'s number')
-  .action(entryId => {
-    console.log(db.getEntry(entryId))
+  .command('add')
+  .description('Add an entry')
+  .action(() => {
+    prompt.get({
+      properties: {
+        masterPassword: {
+          hidden: true,
+          replace: '*',
+          message: 'Master password'
+        },
+        service: {
+          required: true
+        },
+        username: {
+          require: true
+        },
+        password: {
+          hidden: true,
+          replace: '*'
+        },
+        url: {},
+        notes: {}
+      }
+    }, (err, result) => {
+      let coconut = new Coconut(masterPassword)
+    })
   });
+
+program.parse(process.argv)
 
 // vim: sw=2
 

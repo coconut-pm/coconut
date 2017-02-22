@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/oed/avocado#readme",
   "dependencies": {
+    "commander": "^2.9.0",
     "ipfs": "latest",
     "ipfs-api": "latest",
     "ipfs-log": "latest",

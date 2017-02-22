@@ -19,8 +19,9 @@
   "dependencies": {
     "ipfs": "latest",
     "ipfs-api": "latest",
-    "orbit-db-feedstore": "latest",
     "ipfs-log": "latest",
+    "orbit-db-feedstore": "latest",
+    "prompt": "^1.0.0",
     "tweetnacl": "^0.14.3",
     "tweetnacl-util": "^0.13.3"
   },

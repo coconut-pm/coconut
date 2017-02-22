@@ -6,10 +6,9 @@ const IPFS = require('ipfs'),
 const DB_NAME = 'coconut'
 
 class DB {
-  constructor(id = mandatory(), password = mandatory(), ipfs = new IPFS({})) {
+  constructor(password = mandatory(), ipfs = new IPFS({})) {
     this.key = Encryption.expandKey(password)
-    this.store = new FeedStore(ipfs, id, DB_NAME)
-
+    this.store = new FeedStore(ipfs, DB_NAME, DB_NAME)
     this._registerListeners()
   }
 

@@ -5,7 +5,7 @@ describe('Communication with orbit-db-feedstore', function() {
   let db
 
   before(function() {
-    db = new DB('testuser', 'testpassword')
+    db = new DB('testpassword')
   })
 
   afterEach(function(done) {
@@ -94,7 +94,7 @@ describe('Communication with orbit-db-feedstore', function() {
     })
 
     it('should sync from hash', function(done) {
-      let db2 = new DB('testuser', 'testpassword')
+      let db2 = new DB('testpassword')
       db2.sync(db.hash)
         .then(() => {
           expect(db2.entries).to.deep.equal(db.entries)

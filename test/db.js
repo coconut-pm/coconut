@@ -47,7 +47,7 @@ describe('Communication with orbit-db-feedstore', function() {
   })
 
   it('should reject when trying to update non-existent hash', function(done) {
-    db.update('nonexistenthash', {test: 'test'})
+    db._update('nonexistenthash', {test: 'test'})
       .catch(() => {
         done()
       })
@@ -86,7 +86,7 @@ describe('Communication with orbit-db-feedstore', function() {
     it('should update an object', function(done) {
       let newEntry = {a: 5, b: 'c'}
       let entry0 = db.entries[0]
-      db.update(entry0.hash, newEntry)
+      db._update(entry0.hash, newEntry)
         .then(() => {
           expect(db.entries[0].value).to.deep.equal(newEntry)
           done()

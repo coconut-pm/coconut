@@ -24,7 +24,7 @@ describe('Communication with orbit-db-feedstore', function() {
 
   it('should add an object', function(done) {
     let value = {a: 'b'}
-    db.add(value)
+    db._add(value)
       .then(() => {
         let entries = db.entries
         expect(entries).to.have.lengthOf(1)
@@ -62,7 +62,7 @@ describe('Communication with orbit-db-feedstore', function() {
 
   describe('operating on an existing object', function() {
     beforeEach(function(done) {
-      db.add({a: 'b'})
+      db._add({a: 'b'})
         .then(() => {
           done()
         })

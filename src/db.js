@@ -52,7 +52,7 @@ class DB {
 
   update(hash = mandatory(), entry = mandatory()) {
     return this.remove(hash)
-      .then(this.add.bind(this, entry))
+      .then(this._add.bind(this, entry))
   }
 
   get(hash = mandatory()) {

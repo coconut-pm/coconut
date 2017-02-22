@@ -23,7 +23,18 @@ class DB {
     return this.store.sync(hash)
   }
 
-  add(entry = mandatory()) {
+  addEntry(service, username, password, url, notes) {
+    var entry = {
+      service: service,
+      username: username,
+      password: password,
+      url: url,
+      notes: notes
+    }
+    return this._add(entry)
+  }
+
+  _add(entry = mandatory()) {
     let encEntry = Encryption.encryptJson(entry, this.key)
     return this.store.add(encEntry)
   }

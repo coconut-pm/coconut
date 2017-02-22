@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const db = require('../src/db'),
+const DB = require('../src/db'),
       program = require('commander');
 
 program

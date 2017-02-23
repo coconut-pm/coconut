@@ -27,6 +27,8 @@ prompt.get({
       } else {
         coconut.connect(data.toString().trim()).then(() => {
           program.parse(process.argv)
+        }).catch((err) => {
+          console.log(err.message)
         })
       }
     })

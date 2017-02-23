@@ -11,12 +11,9 @@ const HASH_FILE = os.homedir() + '/.local/share/coconut'
 
 prompt.message = ''
 
-//let coconut
-
 function openDB(callback) {
   fs.readFile(HASH_FILE, (error, data) => {
     if (error) {
-      //program.parse(process.argv)
       console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
       process.exit()
     } else {
@@ -39,12 +36,33 @@ function openDB(callback) {
   })
 }
 
+function createDB(callback) {
+  prompt.get({
+      properties: {
+        masterPassword: {
+          hidden: true,
+          message: 'Master password'
+        },
+      }
+    }, (error, result) => {
+      let coconut = new Coconut(result.masterPassword)
+      writeHash(coconut.hash, console.log.bind(console))
+    })
+}
+
 function writeHash(hash, callback) {
   fs.writeFile(HASH_FILE, hash, callback)
 }
 
 program
   .version(packageJson.version)
+
+program
+  .command('init')
+  .description('Initialize the password database')
+  .action(() => {
+    createDB()
+  })
 
 program
   .command('add')
@@ -73,12 +91,6 @@ program
       })
     })
   });
-
-program
-  .command('init')
-  .description('Initialize the password database')
-  .action(() => {
-  })
 
 program
   .command('list')

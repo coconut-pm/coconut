@@ -6,20 +6,14 @@ const fs = require('fs'),
       program = require('commander'),
       prompt = require('prompt'),
       packageJson = require('../package.json')
+      prompts = require('../src/cli_prompts.json')
 
 const HASH_FILE = os.homedir() + '/.local/share/coconut'
 
 prompt.message = ''
 
 let coconut
-prompt.get({
-    properties: {
-      masterPassword: {
-        hidden: true,
-        message: 'Master password'
-      },
-    }
-  }, (error, result) => {
+prompt.get(prompts.masterPassword, (error, result) => {
     coconut = new Coconut(result.masterPassword)
     fs.readFile(HASH_FILE, (error, data) => {
       if (error) {
@@ -27,9 +21,7 @@ prompt.get({
       } else {
         coconut.connect(data.toString().trim()).then(() => {
           program.parse(process.argv)
-        }).catch((err) => {
-          console.log(err.message)
-        })
+        }).catch((err) => console.log(err.message))
       }
     })
   })
@@ -38,31 +30,32 @@ function writeHash(hash, callback) {
   fs.writeFile(HASH_FILE, hash, callback)
 }
 
+function printEntries(entries, withIndex, deep) {
+  entries.forEach((entry, index) => {
+    console.log((withIndex ? index + ': ' : '') + entry.value.service)
+    if (deep) {
+      console.log('Username:', entry.value.username)
+      console.log('Url:', entry.value.url)
+      console.log('Notes:', entry.value.notes)
+    }
+  })
+}
+
 program
   .version(packageJson.version)
 
-program
+  program
   .command('add')
   .description('Add an entry')
   .action(() => {
-    prompt.get({
-      properties: {
-        service: {
-          required: true
-        },
-        username: {
-          require: true
-        },
-        password: {
-          hidden: true,
-        },
-        url: {},
-        notes: {}
-      }
-    }, (err, result) => {
+    prompt.get(prompts.list, (err, result) => {
       coconut.addEntry(result.service, result.username, result.password,
           result.url, result.notes).then(() => {
-        writeHash(coconut.hash, console.log.bind(console))
+        writeHash(coconut.hash, (error) => {
+          if (error) {
+            console.error(error)
+          }
+        })
       })
     })
   });
@@ -71,14 +64,25 @@ program
   .command('list')
   .description('List of all entries')
   .action(() => {
-    console.log(coconut.entries)
+    printEntries(coconut.entries, true)
   })
 
 program
   .command('search')
   .description('Search for entries')
   .action(() => {
-    console.log(coconut.search(process.argv[3]))
+    prompt.get(prompts.search, (err, result) => {
+      let results = coconut.search(result.query)
+      printEntries(results, true)
+      prompt.get(prompts.number, (err, result) => {
+        printEntries([results[result.number]], false, true)
+        prompt.get(prompts.copyPassword, (err, result) => {
+          if (result.copy.toLowerCase() == "y") {
+            console.error('not implemented yet')
+          }
+        })
+      })
+    })
   })
 
 // vim: sw=2

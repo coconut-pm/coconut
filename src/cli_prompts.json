@@ -1,0 +1,48 @@
+{
+    "masterPassword": {
+        "properties": {
+            "masterPassword": {
+                "hidden": true,
+                "message": "Master password"
+            }
+        }
+    },
+    "list": {
+        "properties": {
+            "service": {
+                "required": true
+            },
+            "username": {
+                "require": true
+            },
+            "password": {
+                "hidden": true
+            },
+            "url": {},
+            "notes": {}
+        }
+    },
+    "search": {
+        "properties": {
+            "query": {
+                "required": true
+            }
+        }
+    },
+    "number": {
+        "properties": {
+            "number": {
+                "message": "Pick a number",
+                "required": true
+            }
+        }
+    },
+    "copyPassword": {
+        "properties": {
+            "copy": {
+                "message": "Copy password to clipboard (y/N)"
+            }
+        }
+    }
+}
+

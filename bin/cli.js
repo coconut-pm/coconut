@@ -31,7 +31,7 @@ function openDB(callback) {
 function createDB(callback) {
   prompt.get(prompts.masterPassword, (error, result) => {
     let coconut = new Coconut(result.masterPassword)
-    writeHash(coconut.hash, console.log.bind(console))
+    writeHash(coconut.hash, error => !!error && console.error(error))
   })
 }
 

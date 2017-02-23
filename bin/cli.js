@@ -74,5 +74,12 @@ program
     console.log(coconut.entries)
   })
 
+program
+  .command('search')
+  .description('Search for entries')
+  .action(() => {
+    console.log(coconut.search(process.argv[3]))
+  })
+
 // vim: sw=2
 

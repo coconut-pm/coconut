@@ -12,27 +12,33 @@ const HASH_FILE = os.homedir() + '/.local/share/coconut'
 prompt.message = ''
 
 let coconut
-prompt.get({
-    properties: {
-      masterPassword: {
-        hidden: true,
-        message: 'Master password'
-      },
-    }
-  }, (error, result) => {
-    coconut = new Coconut(result.masterPassword)
-    fs.readFile(HASH_FILE, (error, data) => {
-      if (error) {
-        program.parse(process.argv)
-      } else {
-        coconut.connect(data.toString().trim()).then(() => {
-          program.parse(process.argv)
-        }).catch((err) => {
-          console.log(err.message)
-        })
+fs.readFile(HASH_FILE, (error, data) => {
+  if (error) {
+    //program.parse(process.argv)
+    console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
+    process.exit()
+  } else {
+    mainPrompt(data.toString().trim())
+  }
+})
+
+function mainPrompt(hash) {
+  prompt.get({
+      properties: {
+        masterPassword: {
+          hidden: true,
+          message: 'Master password'
+        },
       }
+    }, (error, result) => {
+      coconut = new Coconut(result.masterPassword)
+      coconut.connect(hash).then(() => {
+        program.parse(process.argv)
+      }).catch((err) => {
+        console.log(err.message)
+      })
     })
-  })
+}
 
 function writeHash(hash, callback) {
   fs.writeFile(HASH_FILE, hash, callback)
@@ -66,6 +72,12 @@ program
       })
     })
   });
+
+program
+  .command('init')
+  .description('Initialize the password database')
+  .action(() => {
+  })
 
 program
   .command('list')

@@ -1,11 +1,17 @@
 const expect = require('chai').expect,
       DB = require('../src/db')
+      ipfsd = require('ipfsd-ctl')
 
 describe('Communication with orbit-db-feedstore', function() {
+  this.timeout(5000)
   let db
 
-  before(function() {
-    db = new DB('testpassword')
+  before(function(done) {
+    ipfsd.disposableApi((err, ipfs) => {
+      this.ipfs = ipfs
+      db = new DB('testpassword', this.ipfs)
+      done()
+    })
   })
 
   afterEach(function(done) {
@@ -53,13 +59,6 @@ describe('Communication with orbit-db-feedstore', function() {
       })
   })
 
-  it('should reject when syncing from non-existent hash', function(done) {
-    db.sync('nonexistenthash')
-      .catch(() => {
-        done()
-      })
-  })
-
   describe('operating on an existing object', function() {
     beforeEach(function(done) {
       db._add({a: 'b'})
@@ -93,11 +92,30 @@ describe('Communication with orbit-db-feedstore', function() {
         })
     })
 
+    it('should reject when connecting to non-existent hash', function(done) {
+      let db2 = new DB('testpassword', this.ipfs)
+      db2.connect('nonexistenthash')
+        .catch(() => {
+          done()
+        })
+    })
+
     it('should sync from hash', function(done) {
-      let db2 = new DB('testpassword')
-      db2.sync(db.hash)
+      let db2 = new DB('testpassword', this.ipfs)
+      db2.connect(db.hash)
         .then(() => {
           expect(db2.entries).to.deep.equal(db.entries)
+          done()
+        })
+    })
+
+    it('should throw if sync wrong password', function(done) {
+      let db2 = new DB('wrongpassword', this.ipfs)
+      db2.connect(db.hash)
+        .then(() => {
+          expect.fail()
+        }).catch((err) => {
+          expect(err.message).to.equal('Incorrect password for given database')
           done()
         })
     })

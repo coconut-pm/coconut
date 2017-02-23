@@ -25,7 +25,7 @@ prompt.get({
       if (error) {
         program.parse(process.argv)
       } else {
-        coconut.sync(data.toString().trim()).then(() => {
+        coconut.connect(data.toString().trim()).then(() => {
           program.parse(process.argv)
         })
       }

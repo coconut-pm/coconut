@@ -18,9 +18,15 @@ class DB {
     })
   }
 
-  sync(hash = mandatory()) {
+  connect(hash = mandatory()) {
+    if (this._hash) {
+      throw Error('You can not connect when db has been initialized.')
+    }
     this._hash = hash
     return this.store.sync(hash)
+      .then(() => {
+        return this.entries
+      })
   }
 
   _add(entry = mandatory()) {
@@ -64,7 +70,13 @@ class DB {
 
   _decrypt(e) {
     let encEntry = e.payload.value
-    return Encryption.decryptJson(encEntry.ciphertext, encEntry.nonce, this.key)
+    let entry
+    try {
+      entry = Encryption.decryptJson(encEntry.ciphertext, encEntry.nonce, this.key)
+    } catch (err) {
+      throw Error('Incorrect password for given database')
+    }
+    return entry
   }
 
   get hash() {

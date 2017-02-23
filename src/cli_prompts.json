@@ -7,7 +7,7 @@
             }
         }
     },
-    "list": {
+    "add": {
         "properties": {
             "service": {
                 "required": true

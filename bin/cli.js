@@ -12,19 +12,28 @@ const HASH_FILE = os.homedir() + '/.local/share/coconut'
 
 prompt.message = ''
 
-let coconut
-prompt.get(prompts.masterPassword, (error, result) => {
-    coconut = new Coconut(result.masterPassword)
-    fs.readFile(HASH_FILE, (error, data) => {
-      if (error) {
-        program.parse(process.argv)
-      } else {
+function openDB(callback) {
+  fs.readFile(HASH_FILE, (error, data) => {
+    if (error) {
+      console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
+      process.exit()
+    } else {
+      prompt.get(prompts.masterPassword, (error, result) => {
+        let coconut = new Coconut(result.masterPassword)
         coconut.connect(data.toString().trim()).then(() => {
-          program.parse(process.argv)
-        }).catch((err) => console.log(err.message))
-      }
-    })
+          callback(coconut)
+        }).catch((err) => console.error(err.message))
+      })
+    }
   })
+}
+
+function createDB(callback) {
+  prompt.get(prompts.masterPassword, (error, result) => {
+    let coconut = new Coconut(result.masterPassword)
+    writeHash(coconut.hash, console.log.bind(console))
+  })
+}
 
 function writeHash(hash, callback) {
   fs.writeFile(HASH_FILE, hash, callback)
@@ -44,17 +53,22 @@ function printEntries(entries, withIndex, deep) {
 program
   .version(packageJson.version)
 
-  program
+program
+  .command('init')
+  .description('Initialize the password database')
+  .action(() => {
+    createDB()
+  })
+
+program
   .command('add')
   .description('Add an entry')
   .action(() => {
-    prompt.get(prompts.list, (err, result) => {
-      coconut.addEntry(result.service, result.username, result.password,
-          result.url, result.notes).then(() => {
-        writeHash(coconut.hash, (error) => {
-          if (error) {
-            console.error(error)
-          }
+    openDB((coconut) => {
+      prompt.get(prompts.add, (err, result) => {
+        coconut.addEntry(result.service, result.username, result.password,
+            result.url, result.notes).then(() => {
+          writeHash(coconut.hash, error => !!error && console.error(error))
         })
       })
     })
@@ -64,26 +78,32 @@ program
   .command('list')
   .description('List of all entries')
   .action(() => {
-    printEntries(coconut.entries, true)
+    openDB((coconut) => {
+      printEntries(coconut.entries, true)
+    })
   })
 
 program
   .command('search')
   .description('Search for entries')
   .action(() => {
-    prompt.get(prompts.search, (err, result) => {
-      let results = coconut.search(result.query)
-      printEntries(results, true)
-      prompt.get(prompts.number, (err, result) => {
-        printEntries([results[result.number]], false, true)
-        prompt.get(prompts.copyPassword, (err, result) => {
-          if (result.copy.toLowerCase() == "y") {
-            console.error('not implemented yet')
-          }
+    openDB((coconut) => {
+      prompt.get(prompts.search, (err, result) => {
+        let results = coconut.search(result.query)
+        printEntries(results, true)
+        prompt.get(prompts.number, (err, result) => {
+          printEntries([results[result.number]], false, true)
+          prompt.get(prompts.copyPassword, (err, result) => {
+            if (result.copy.toLowerCase() == "y") {
+              console.error('not implemented yet')
+            }
+          })
         })
       })
     })
   })
+
+program.parse(process.argv)
 
 // vim: sw=2
 

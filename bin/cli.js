@@ -98,8 +98,10 @@ function remove(index) {
     printEntries(coconut.entries[index], false, true)
     prompt.get(prompts.deleteConfirm, (err, result) => {
       if (result.deleteConfirm.toLowerCase() == "y") {
-        // TODO: Check why it isn't working
         coconut.remove(coconut.entries[index].hash)
+          .then(hash => {
+            writeHash(coconut.hash, error => !!error && console.error(error))
+          })
       }
     })
   })

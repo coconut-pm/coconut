@@ -40,7 +40,14 @@
     "copyPassword": {
         "properties": {
             "copy": {
-                "message": "Copy password to clipboard (y/N)"
+                "message": "Copy password to clipboard? (y/N)"
+            }
+        }
+    },
+    "deleteConfirm": {
+        "properties": {
+            "deleteConfirm": {
+                "message": "Are you sure you want to delete this service? (y/N)"
             }
         }
     }

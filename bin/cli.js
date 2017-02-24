@@ -41,7 +41,7 @@ function writeHash(hash, callback) {
 }
 
 function printEntries(entries, withIndex, deep) {
-  if (entries.hash) {
+  if (!Array.isArray(entries)) {
     entries = [entries]
   }
   entries.forEach((entry, index) => {
@@ -97,6 +97,18 @@ function get(index) {
   })
 }
 
+function remove(index) {
+  openDB((coconut) => {
+    printEntries(coconut.entries[index], false, true)
+    prompt.get(prompts.deleteConfirm, (err, result) => {
+      if (result.deleteConfirm.toLowerCase() == "y") {
+        // TODO: Check why it isn't working
+        coconut.remove(coconut.entries[index].hash)
+      }
+    })
+  })
+}
+
 program
   .version(packageJson.version)
 
@@ -124,6 +136,11 @@ program
   .command('get <index>')
   .description('View an entry')
   .action(get)
+
+program
+  .command('delete <index>')
+  .description('Delete an entry')
+  .action(remove)
 
 program.parse(process.argv)
 

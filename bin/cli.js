@@ -2,10 +2,11 @@
 
 const fs = require('fs'),
       os = require('os'),
-      Coconut = require('../src/coconut'),
       program = require('commander'),
       prompt = require('prompt'),
+      clipboard = require('clipboardy');
       packageJson = require('../package.json')
+      Coconut = require('../src/coconut'),
       prompts = require('../src/cli_prompts.json')
 
 const HASH_FILE = os.homedir() + '/.local/share/coconut'
@@ -82,7 +83,11 @@ function get(index) {
     printEntries(coconut.entries[index], false, true)
     prompt.get(prompts.copyPassword, (err, result) => {
       if (result.copy.toLowerCase() == "y") {
-        console.error('not implemented yet')
+        clipboard.write(coconut.entries[index].value.password)
+        console.log('Your password has been coopied to your clipboard and will be overwritten in 5 secons.')
+        setTimeout(() => {
+          clipboard.write('')
+        }, 5000)
       }
     })
   })
@@ -94,9 +99,7 @@ program
 program
   .command('init')
   .description('Initialize the password database')
-  .action(() => {
-    createDB()
-  })
+  .action(createDB)
 
 program
   .command('add')

@@ -40,6 +40,9 @@ function writeHash(hash, callback) {
 }
 
 function printEntries(entries, withIndex, deep) {
+  if (entries.hash) {
+    entries = [entries]
+  }
   entries.forEach((entry, index) => {
     console.log((withIndex ? index + ': ' : '') + entry.value.service)
     if (deep) {
@@ -47,6 +50,41 @@ function printEntries(entries, withIndex, deep) {
       console.log('Url:', entry.value.url)
       console.log('Notes:', entry.value.notes)
     }
+  })
+}
+
+function add() {
+  openDB((coconut) => {
+    prompt.get(prompts.add, (err, result) => {
+      coconut.addEntry(result.service, result.username, result.password,
+          result.url, result.notes).then(() => {
+        writeHash(coconut.hash, error => !!error && console.error(error))
+      })
+    })
+  })
+}
+
+function listEntries() {
+  openDB((coconut) => {
+    printEntries(coconut.entries, true)
+  })
+}
+
+function search(query) {
+  openDB((coconut) => {
+    let results = coconut.search(query)
+    printEntries(results, true)
+  })
+}
+
+function get(index) {
+  openDB((coconut) => {
+    printEntries(coconut.entries[index], false, true)
+    prompt.get(prompts.copyPassword, (err, result) => {
+      if (result.copy.toLowerCase() == "y") {
+        console.error('not implemented yet')
+      }
+    })
   })
 }
 
@@ -63,45 +101,22 @@ program
 program
   .command('add')
   .description('Add an entry')
-  .action(() => {
-    openDB((coconut) => {
-      prompt.get(prompts.add, (err, result) => {
-        coconut.addEntry(result.service, result.username, result.password,
-            result.url, result.notes).then(() => {
-          writeHash(coconut.hash, error => !!error && console.error(error))
-        })
-      })
-    })
-  });
+  .action(add);
 
 program
   .command('list')
   .description('List of all entries')
-  .action(() => {
-    openDB((coconut) => {
-      printEntries(coconut.entries, true)
-    })
-  })
+  .action(listEntries)
 
 program
-  .command('search')
+  .command('search <query>')
   .description('Search for entries')
-  .action(() => {
-    openDB((coconut) => {
-      prompt.get(prompts.search, (err, result) => {
-        let results = coconut.search(result.query)
-        printEntries(results, true)
-        prompt.get(prompts.number, (err, result) => {
-          printEntries([results[result.number]], false, true)
-          prompt.get(prompts.copyPassword, (err, result) => {
-            if (result.copy.toLowerCase() == "y") {
-              console.error('not implemented yet')
-            }
-          })
-        })
-      })
-    })
-  })
+  .action(search)
+
+program
+  .command('get <index>')
+  .description('View an entry')
+  .action(get)
 
 program.parse(process.argv)
 

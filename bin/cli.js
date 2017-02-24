@@ -105,6 +105,22 @@ function remove(index) {
   })
 }
 
+function update(index) {
+  openDB((coconut) => {
+    prompt.get(prompts.add, (err, result) => {
+      prompt.get(prompts.update, (err2, result2) => {
+        if (result2.confirm.toLowerCase() === 'y') {
+          let hash = coconut.entries[index].hash
+          coconut.updateEntry(hash, result.service, result.username, result.password,
+              result.url, result.notes).then(() => {
+            writeHash(coconut.hash, error => !!error && console.error(error))
+          })
+        }
+      })
+    })
+  })
+}
+
 program
   .version(packageJson.version)
 
@@ -137,6 +153,11 @@ program
   .command('delete <index>')
   .description('Delete an entry')
   .action(remove)
+
+program
+  .command('update <index>')
+  .description('Udate an entry')
+  .action(update)
 
 program.parse(process.argv)
 

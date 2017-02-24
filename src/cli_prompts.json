@@ -43,6 +43,13 @@
                 "message": "Are you sure you want to delete this service? (y/N)"
             }
         }
+    },
+    "update": {
+        "properties": {
+            "confirm": {
+                "message": "Are you sure you want to overwrite this service? (y/N)"
+            }
+        }
     }
 }
 

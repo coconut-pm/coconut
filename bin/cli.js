@@ -55,7 +55,7 @@ function printEntries(entries, withIndex, deep) {
 }
 
 function copyPassword(entry) {
-  clipboard.write(entry)
+  clipboard.write(entry.value.password)
   console.log('Your password has been coopied to your clipboard and will be overwritten in 5 secons.')
   setTimeout(() => {
     clipboard.write('')
@@ -89,11 +89,7 @@ function search(query) {
 function get(index) {
   openDB((coconut) => {
     printEntries(coconut.entries[index], false, true)
-    prompt.get(prompts.copyPassword, (err, result) => {
-      if (result.copy.toLowerCase() == "y") {
-        copyPassword(coconut.entries[index].value.password)
-      }
-    })
+    copyPassword(coconut.entries[index])
   })
 }
 

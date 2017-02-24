@@ -37,13 +37,6 @@
             }
         }
     },
-    "copyPassword": {
-        "properties": {
-            "copy": {
-                "message": "Copy password to clipboard? (y/N)"
-            }
-        }
-    },
     "deleteConfirm": {
         "properties": {
             "deleteConfirm": {

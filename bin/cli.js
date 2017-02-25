@@ -134,6 +134,7 @@ function generatePassword() {
 function update(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
   prompt.get(prompts.add, (err, result) => {
+    result.password = result.password || generatePassword()
     prompt.get(prompts.update, (err2, result2) => {
       if (result2.confirm.toLowerCase() === 'y') {
         coconut.updateEntry(entry.hash, result.service, result.username, result.password,

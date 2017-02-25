@@ -138,7 +138,9 @@ function add(coconut) {
   promptHandler(prompts.add, (err, result) => {
     result.password = result.password || generatePassword()
     coconut.addEntry(result.service, result.username, result.password,
-        result.url, result.notes).then(() => writeHash(coconut.hash))
+        result.url, result.notes)
+      .then(() => writeHash(coconut.hash))
+      .catch(error => console.error(error.message))
   })
 }
 
@@ -160,7 +162,9 @@ function update(coconut, entry) {
     promptHandler(prompts.update, (err2, result2) => {
       if (result2.confirm.toLowerCase() === 'y') {
         coconut.updateEntry(entry.hash, result.service, result.username, result.password,
-            result.url, result.notes).then(() => writeHash(coconut.hash))
+            result.url, result.notes)
+          .then(() => writeHash(coconut.hash))
+          .catch(error => console.error(error.message))
       }
     })
   })

@@ -116,6 +116,7 @@ function generatePassword() {
 function update(index) {
   openDB((coconut) => {
     prompt.get(prompts.add, (err, result) => {
+      result.password = result.password || generatePassword()
       prompt.get(prompts.update, (err2, result2) => {
         if (result2.confirm.toLowerCase() === 'y') {
           let hash = coconut.entries[index].hash

@@ -55,9 +55,9 @@ function printEntries(entries, withIndex, deep) {
   entries.forEach((entry, index) => {
     console.log((withIndex ? index + ': ' : '') + entry.value.service)
     if (deep) {
-      console.log('Username:', entry.value.username)
-      console.log('Url:', entry.value.url)
-      console.log('Notes:', entry.value.notes)
+      console.log('Username:', entry.value.username || '')
+      console.log('Url:', entry.value.url || '')
+      console.log('Notes:', entry.value.notes || '')
     }
   })
 }
@@ -202,6 +202,10 @@ program
   .action(() => openDB(coconut => console.log(coconut.hash)))
 
 program.parse(process.argv)
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp()
+}
 
 // vim: sw=2
 

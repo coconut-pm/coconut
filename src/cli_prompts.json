@@ -16,6 +16,7 @@
                 "require": true
             },
             "password": {
+                "message": "Password (Empty will autogenerate password)",
                 "hidden": true
             },
             "url": {},

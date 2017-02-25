@@ -5,13 +5,16 @@ const fs = require('fs'),
       program = require('commander'),
       prompt = require('prompt'),
       clipboard = require('clipboardy');
+      PasswordGenerator = require('strict-password-generator').default,
       packageJson = require('../package.json')
       Coconut = require('../src/coconut'),
       prompts = require('../src/cli_prompts.json')
 
 const HASH_FILE = os.homedir() + '/.local/share/coconut'
+const passwordGenerator = new PasswordGenerator()
 
 prompt.message = ''
+const PASSWORD_OPTIONS = { exactLength: 50 }
 
 function openDB(callback) {
   fs.readFile(HASH_FILE, (error, data) => {
@@ -32,11 +35,12 @@ function openDB(callback) {
 function createDB(callback) {
   prompt.get(prompts.masterPassword, (error, result) => {
     let coconut = new Coconut(result.masterPassword)
-    writeHash(coconut.hash, error => !!error && console.error(error))
+    writeHash(coconut.hash)
   })
 }
 
 function writeHash(hash, callback) {
+  callback = callback || (error => error && console.error(error))
   fs.writeFile(HASH_FILE, hash, callback)
 }
 
@@ -65,10 +69,11 @@ function copyPassword(entry) {
 function add() {
   openDB((coconut) => {
     prompt.get(prompts.add, (err, result) => {
+      if (result.password === '') {
+        result.password = generatePassword()
+      }
       coconut.addEntry(result.service, result.username, result.password,
-          result.url, result.notes).then(() => {
-        writeHash(coconut.hash, error => !!error && console.error(error))
-      })
+          result.url, result.notes).then(() => writeHash(coconut.hash))
     })
   })
 }
@@ -99,12 +104,16 @@ function remove(index) {
     prompt.get(prompts.deleteConfirm, (err, result) => {
       if (result.deleteConfirm.toLowerCase() == "y") {
         coconut.remove(coconut.entries[index].hash)
-          .then(hash => {
-            writeHash(coconut.hash, error => !!error && console.error(error))
-          })
+          .then(() => writeHash(coconut.hash))
       }
     })
   })
+}
+
+function generatePassword() {
+  let password = passwordGenerator.generatePassword(PASSWORD_OPTIONS)
+  console.log('Generated password:', password)
+  return password
 }
 
 function update(index) {
@@ -114,9 +123,7 @@ function update(index) {
         if (result2.confirm.toLowerCase() === 'y') {
           let hash = coconut.entries[index].hash
           coconut.updateEntry(hash, result.service, result.username, result.password,
-              result.url, result.notes).then(() => {
-            writeHash(coconut.hash, error => !!error && console.error(error))
-          })
+              result.url, result.notes).then(() => writeHash(coconut.hash))
         }
       })
     })

@@ -70,12 +70,9 @@ function copyPassword(entry) {
   }, 5000)
 }
 
-function add(coconut) {
-  prompt.get(prompts.add, (err, result) => {
-    result.password = result.password || generatePassword()
-    coconut.addEntry(result.service, result.username, result.password,
-        result.url, result.notes).then(() => writeHash(coconut.hash))
-  })
+function generatePassword() {
+  let password = passwordGenerator.generatePassword(PASSWORD_OPTIONS)
+  return password
 }
 
 function listEntries(coconut) {
@@ -119,6 +116,14 @@ function get(coconut, entry) {
   copyPassword(entry)
 }
 
+function add(coconut) {
+  prompt.get(prompts.add, (err, result) => {
+    result.password = result.password || generatePassword()
+    coconut.addEntry(result.service, result.username, result.password,
+        result.url, result.notes).then(() => writeHash(coconut.hash))
+  })
+}
+
 function remove(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
   printEntries(entry, false, true)
@@ -128,11 +133,6 @@ function remove(coconut, entry) {
         .then(() => writeHash(coconut.hash))
     }
   })
-}
-
-function generatePassword() {
-  let password = passwordGenerator.generatePassword(PASSWORD_OPTIONS)
-  return password
 }
 
 function update(coconut, entry) {

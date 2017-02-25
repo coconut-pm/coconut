@@ -157,11 +157,6 @@ program
   .action(createDB)
 
 program
-  .command('add')
-  .description('Add an entry')
-  .action(() => openDB(add));
-
-program
   .command('list')
   .description('List of all entries')
   .action(() => openDB(listEntries));
@@ -176,25 +171,9 @@ program
   })
 
 program
-  .command('get <index>')
-  .description('View an entry')
-  .action(index => {
-    openDB(coconut => get(coconut, index))
-  })
-
-program
-  .command('delete <index>')
-  .description('Delete an entry')
-  .action(index => {
-    openDB(coconut => remove(coconut, index))
-  })
-
-program
-  .command('update <index>')
-  .description('Udate an entry')
-  .action(index => {
-    openDB(coconut => update(coconut, index))
-  })
+  .command('add')
+  .description('Add an entry')
+  .action(() => openDB(add));
 
 program
   .command('hash')

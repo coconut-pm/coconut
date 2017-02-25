@@ -66,41 +66,35 @@ function copyPassword(entry) {
   }, 5000)
 }
 
-function add() {
-  openDB((coconut) => {
-    prompt.get(prompts.add, (err, result) => {
-      result.password = result.password || generatePassword()
-      coconut.addEntry(result.service, result.username, result.password,
-          result.url, result.notes).then(() => writeHash(coconut.hash))
+function add(coconut) {
+  prompt.get(prompts.add, (err, result) => {
+    result.password = result.password || generatePassword()
+    coconut.addEntry(result.service, result.username, result.password,
+        result.url, result.notes).then(() => writeHash(coconut.hash))
+  })
+}
+
+function listEntries(coconut) {
+  printEntries(coconut.entries, true)
+}
+
+function search(coconut, query, options) {
+  let results = coconut.search(query)
+  printEntries(results, true)
+
+  if (results.length) {
+    pickOne(results, entry => {
+      if (options.delete) {
+        remove(coconut, entry)
+      } else if (options.update) {
+        update(coconut, entry)
+      } else {
+        get(coconut, entry)
+      }
     })
-  })
-}
-
-function listEntries() {
-  openDB((coconut) => {
-    printEntries(coconut.entries, true)
-  })
-}
-
-function search(query, options) {
-  openDB((coconut) => {
-    let results = coconut.search(query)
-    printEntries(results, true)
-
-    if (results.length) {
-      pickOne(results, entry => {
-        if (options.delete) {
-          remove(entry)
-        } else if (options.update) {
-          update(entry)
-        } else {
-          get(entry)
-        }
-      })
-    } else {
-      console.log('No results for your query')
-    }
-  })
+  } else {
+    console.log('No results for your query')
+  }
 }
 
 function pickOne(entries, callback) {
@@ -115,24 +109,20 @@ function pickOne(entries, callback) {
   }
 }
 
-function get(entry) {
-  openDB((coconut) => {
-    entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
-    printEntries(entry, false, true)
-    copyPassword(entry)
-  })
+function get(coconut, entry) {
+  entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
+  printEntries(entry, false, true)
+  copyPassword(entry)
 }
 
-function remove(entry) {
-  openDB((coconut) => {
-    entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
-    printEntries(entry, false, true)
-    prompt.get(prompts.deleteConfirm, (err, result) => {
-      if (result.deleteConfirm.toLowerCase() == "y") {
-        coconut.remove(entry.hash)
-          .then(() => writeHash(coconut.hash))
-      }
-    })
+function remove(coconut, entry) {
+  entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
+  printEntries(entry, false, true)
+  prompt.get(prompts.deleteConfirm, (err, result) => {
+    if (result.deleteConfirm.toLowerCase() == "y") {
+      coconut.remove(entry.hash)
+        .then(() => writeHash(coconut.hash))
+    }
   })
 }
 
@@ -141,16 +131,14 @@ function generatePassword() {
   return password
 }
 
-function update(entry) {
-  openDB((coconut) => {
-    entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
-    prompt.get(prompts.add, (err, result) => {
-      prompt.get(prompts.update, (err2, result2) => {
-        if (result2.confirm.toLowerCase() === 'y') {
-          coconut.updateEntry(entry.hash, result.service, result.username, result.password,
-              result.url, result.notes).then(() => writeHash(coconut.hash))
-        }
-      })
+function update(coconut, entry) {
+  entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
+  prompt.get(prompts.add, (err, result) => {
+    prompt.get(prompts.update, (err2, result2) => {
+      if (result2.confirm.toLowerCase() === 'y') {
+        coconut.updateEntry(entry.hash, result.service, result.username, result.password,
+            result.url, result.notes).then(() => writeHash(coconut.hash))
+      }
     })
   })
 }
@@ -166,34 +154,42 @@ program
 program
   .command('add')
   .description('Add an entry')
-  .action(add);
+  .action(() => openDB(add));
 
 program
   .command('list')
   .description('List of all entries')
-  .action(listEntries)
+  .action(() => openDB(listEntries));
 
 program
   .command('search <query>')
   .description('Search for entries')
   .option('-d, --delete', 'Delete the entry from the search')
   .option('-u, --update', 'Update the entry from the search')
-  .action(search)
+  .action((query, options) => {
+    openDB(coconut => search(coconut, query, options))
+  })
 
 program
   .command('get <index>')
   .description('View an entry')
-  .action(get)
+  .action(index => {
+    openDB(coconut => get(coconut, index))
+  })
 
 program
   .command('delete <index>')
   .description('Delete an entry')
-  .action(remove)
+  .action(index => {
+    openDB(coconut => remove(coconut, index))
+  })
 
 program
   .command('update <index>')
   .description('Udate an entry')
-  .action(update)
+  .action(index => {
+    openDB(coconut => update(coconut, index))
+  })
 
 program.parse(process.argv)
 

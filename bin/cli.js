@@ -32,11 +32,15 @@ function openDB(callback) {
   })
 }
 
-function createDB(callback) {
-  prompt.get(prompts.masterPassword, (error, result) => {
-    let coconut = new Coconut(result.masterPassword)
-    writeHash(coconut.hash)
-  })
+function createDB(hash) {
+  if (hash) {
+    writeHash(hash)
+  } else {
+    prompt.get(prompts.masterPassword, (error, result) => {
+      let coconut = new Coconut(result.masterPassword)
+      writeHash(coconut.hash)
+    })
+  }
 }
 
 function writeHash(hash, callback) {
@@ -148,7 +152,7 @@ program
   .version(packageJson.version)
 
 program
-  .command('init')
+  .command('init [hash]')
   .description('Initialize the password database')
   .action(createDB)
 
@@ -191,6 +195,12 @@ program
   .action(index => {
     openDB(coconut => update(coconut, index))
   })
+
+
+program
+  .command('hash')
+  .description('Get current root hash')
+  .action(() => openDB(coconut => console.log(coconut.hash)))
 
 program.parse(process.argv)
 

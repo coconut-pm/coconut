@@ -60,7 +60,7 @@ function printEntries(entries, withIndex, deep) {
 
 function copyPassword(entry) {
   clipboard.write(entry.value.password)
-  console.log('Your password has been coopied to your clipboard and will be overwritten in 5 secons.')
+  console.log('Your password has been coopied to your clipboard and will be overwritten in 5 seconds.')
   setTimeout(() => {
     clipboard.write('')
   }, 5000)
@@ -82,26 +82,54 @@ function listEntries() {
   })
 }
 
-function search(query) {
+function search(query, options) {
   openDB((coconut) => {
     let results = coconut.search(query)
     printEntries(results, true)
+
+    if (results.length) {
+      pickOne(results, entry => {
+        if (options.delete) {
+          remove(entry)
+        } else if (options.update) {
+          update(entry)
+        } else {
+          get(entry)
+        }
+      })
+    } else {
+      console.log('No results for your query')
+    }
   })
 }
 
-function get(index) {
+function pickOne(entries, callback) {
+  if (!entries.length) {
+    callback()
+  } else if (entries.length === 1) {
+    callback(entries[0])
+  } else {
+    prompt.get(prompts.number, (err, result) => {
+      callback(entries[result.number])
+    })
+  }
+}
+
+function get(entry) {
   openDB((coconut) => {
-    printEntries(coconut.entries[index], false, true)
-    copyPassword(coconut.entries[index])
+    entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
+    printEntries(entry, false, true)
+    copyPassword(entry)
   })
 }
 
-function remove(index) {
+function remove(entry) {
   openDB((coconut) => {
-    printEntries(coconut.entries[index], false, true)
+    entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
+    printEntries(entry, false, true)
     prompt.get(prompts.deleteConfirm, (err, result) => {
       if (result.deleteConfirm.toLowerCase() == "y") {
-        coconut.remove(coconut.entries[index].hash)
+        coconut.remove(entry.hash)
           .then(() => writeHash(coconut.hash))
       }
     })
@@ -113,13 +141,13 @@ function generatePassword() {
   return password
 }
 
-function update(index) {
+function update(entry) {
   openDB((coconut) => {
+    entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
     prompt.get(prompts.add, (err, result) => {
       prompt.get(prompts.update, (err2, result2) => {
         if (result2.confirm.toLowerCase() === 'y') {
-          let hash = coconut.entries[index].hash
-          coconut.updateEntry(hash, result.service, result.username, result.password,
+          coconut.updateEntry(entry.hash, result.service, result.username, result.password,
               result.url, result.notes).then(() => writeHash(coconut.hash))
         }
       })
@@ -148,6 +176,8 @@ program
 program
   .command('search <query>')
   .description('Search for entries')
+  .option('-d, --delete', 'Delete the entry from the search')
+  .option('-u, --update', 'Update the entry from the search')
   .action(search)
 
 program

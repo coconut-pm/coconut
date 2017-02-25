@@ -22,7 +22,7 @@ function openDB(callback) {
       console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
       process.exit()
     } else {
-      prompt.get(prompts.masterPassword, (error, result) => {
+      promptHandler(prompts.masterPassword, (error, result) => {
         let coconut = new Coconut(result.masterPassword)
         coconut.connect(data.toString().trim()).then(() => {
           callback(coconut)
@@ -36,7 +36,7 @@ function createDB(hash) {
   if (hash) {
     writeHash(hash)
   } else {
-    prompt.get(prompts.masterPassword, (error, result) => {
+    promptHandler(prompts.masterPassword, (error, result) => {
       let coconut = new Coconut(result.masterPassword)
       writeHash(coconut.hash)
     })
@@ -46,6 +46,20 @@ function createDB(hash) {
 function writeHash(hash, callback) {
   callback = callback || (error => error && console.error(error))
   fs.writeFile(HASH_FILE, hash, callback)
+}
+
+function promptHandler(questions, callback) {
+  prompt.get(questions, (error, result) => {
+    if (error) {
+      if (error.message === 'canceled') {
+        process.exit()
+      } else {
+        console.error(error.message)
+      }
+    } else {
+      callback(error, result)
+    }
+  })
 }
 
 function printEntries(entries, withIndex, deep) {
@@ -94,7 +108,7 @@ function search(coconut, query, options) {
       }
     })
   } else {
-    console.log('No results for your query')
+    console.error('No results for your query')
   }
 }
 
@@ -104,8 +118,12 @@ function pickOne(entries, callback) {
   } else if (entries.length === 1) {
     callback(entries[0])
   } else {
-    prompt.get(prompts.number, (err, result) => {
-      callback(entries[result.number])
+    promptHandler(prompts.number, (err, result) => {
+      if (result.number >= entries.length) {
+        console.error('No such entry')
+      } else {
+        callback(entries[result.number])
+      }
     })
   }
 }
@@ -117,7 +135,7 @@ function get(coconut, entry) {
 }
 
 function add(coconut) {
-  prompt.get(prompts.add, (err, result) => {
+  promptHandler(prompts.add, (err, result) => {
     result.password = result.password || generatePassword()
     coconut.addEntry(result.service, result.username, result.password,
         result.url, result.notes).then(() => writeHash(coconut.hash))
@@ -127,7 +145,7 @@ function add(coconut) {
 function remove(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
   printEntries(entry, false, true)
-  prompt.get(prompts.deleteConfirm, (err, result) => {
+  promptHandler(prompts.deleteConfirm, (err, result) => {
     if (result.deleteConfirm.toLowerCase() == "y") {
       coconut.remove(entry.hash)
         .then(() => writeHash(coconut.hash))
@@ -137,9 +155,9 @@ function remove(coconut, entry) {
 
 function update(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
-  prompt.get(prompts.add, (err, result) => {
+  promptHandler(prompts.add, (err, result) => {
     result.password = result.password || generatePassword()
-    prompt.get(prompts.update, (err2, result2) => {
+    promptHandler(prompts.update, (err2, result2) => {
       if (result2.confirm.toLowerCase() === 'y') {
         coconut.updateEntry(entry.hash, result.service, result.username, result.password,
             result.url, result.notes).then(() => writeHash(coconut.hash))

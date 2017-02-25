@@ -69,9 +69,7 @@ function copyPassword(entry) {
 function add() {
   openDB((coconut) => {
     prompt.get(prompts.add, (err, result) => {
-      if (result.password === '') {
-        result.password = generatePassword()
-      }
+      result.password = result.password || generatePassword()
       coconut.addEntry(result.service, result.username, result.password,
           result.url, result.notes).then(() => writeHash(coconut.hash))
     })
@@ -112,7 +110,6 @@ function remove(index) {
 
 function generatePassword() {
   let password = passwordGenerator.generatePassword(PASSWORD_OPTIONS)
-  console.log('Generated password:', password)
   return password
 }
 

@@ -196,7 +196,6 @@ program
     openDB(coconut => update(coconut, index))
   })
 
-
 program
   .command('hash')
   .description('Get current root hash')

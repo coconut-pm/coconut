@@ -8,8 +8,8 @@ const fs = require('fs'),
       clipboard = require('clipboardy');
       PasswordGenerator = require('strict-password-generator').default,
       packageJson = require('../package.json')
-      Coconut = require('../src/coconut'),
-      prompts = require('../src/cli_prompts.json')
+      Coconut = require('../src/core/coconut'),
+      prompts = require('../src/cli/prompts.json')
 
 const HASH_FILE = path.join(os.homedir(), '.coconut')
 const passwordGenerator = new PasswordGenerator()

@@ -18,18 +18,14 @@ prompt.message = ''
 const PASSWORD_OPTIONS = { exactLength: 50 }
 
 function openDB(callback) {
-  fs.readFile(HASH_FILE, (error, data) => {
-    if (error) {
-      console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
-      process.exit()
-    } else {
-      promptHandler(prompts.masterPassword, (error, result) => {
-        let coconut = new Coconut(result.masterPassword)
-        coconut.connect(data.toString().trim()).then(() => {
+  readHash(hash => {
+    promptHandler(prompts.masterPassword, (error, result) => {
+      let coconut = new Coconut(result.masterPassword)
+      coconut.connect(hash)
+        .then(() => {
           callback(coconut)
         }).catch((err) => console.error(err.message))
-      })
-    }
+    })
   })
 }
 
@@ -45,6 +41,17 @@ function createDB(hash) {
         })
     })
   }
+}
+
+function readHash(callback) {
+  fs.readFile(HASH_FILE, (error, data) => {
+    if (error) {
+      console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
+      process.exit()
+    } else {
+      callback(data.toString().trim())
+    }
+  })
 }
 
 function writeHash(hash, callback) {

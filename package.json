@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/oed/avocado#readme",
   "dependencies": {
+    "body-parser": "^1.16.1",
     "clipboardy": "^0.1.2",
     "commander": "^2.9.0",
+    "express": "^4.14.1",
     "ipfs": "latest",
     "ipfs-api": "latest",
     "orbit-db": "latest",

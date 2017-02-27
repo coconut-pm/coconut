@@ -39,7 +39,7 @@ function createDB(hash) {
   } else {
     promptHandler(prompts.masterPassword, (error, result) => {
       let coconut = new Coconut(result.masterPassword)
-      coconut.addEntry('Coconut', undefined, result.masterPasssword, 'http://coco.nut', 'This is created to create a hash')
+      coconut.addEntry('Coconut', undefined, result.masterPassword, 'http://coco.nut', 'This is created to create a hash')
         .then(() => {
           writeHash(coconut.hash)
         })
@@ -81,11 +81,13 @@ function printEntries(entries, withIndex, deep) {
 }
 
 function copyPassword(entry) {
-  clipboard.write(entry.value.password)
-  console.log('Your password has been coopied to your clipboard and will be overwritten in 5 seconds.')
-  setTimeout(() => {
-    clipboard.write('')
-  }, 5000)
+  if (entry.value.password) {
+    clipboard.write(entry.value.password)
+    console.log('Your password has been coopied to your clipboard and will be overwritten in 5 seconds.')
+    setTimeout(() => {
+      clipboard.write('')
+    }, 5000)
+  }
 }
 
 function generatePassword() {

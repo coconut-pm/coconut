@@ -1,18 +1,16 @@
-const IPFS = require('ipfs'),
-      FeedStore = require('orbit-db-feedstore'),
+const IPFS = require('ipfs-api'),
+      OrbitDB = require('orbit-db'),
       utils = require('./utils'),
       Encryption = require('./encryption.js')
 
 const DB_NAME = 'coconut'
 
 class DB {
-  constructor(password = mandatory(), ipfs = new IPFS({})) {
+  constructor(password = mandatory(), ipfs = new IPFS()) {
     this.key = Encryption.expandKey(password)
-    this.store = new FeedStore(ipfs, DB_NAME, DB_NAME)
-    this._registerListeners()
-  }
 
-  _registerListeners() {
+    let orbitdb = new OrbitDB(ipfs)
+    this.store = orbitdb.feed(DB_NAME)
     this.store.events.on('write', (dbname, hash) => {
       this._hash = hash
     })

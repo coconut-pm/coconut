@@ -2,6 +2,7 @@
 
 const fs = require('fs'),
       os = require('os'),
+      path = require('path');
       program = require('commander'),
       prompt = require('prompt'),
       clipboard = require('clipboardy');
@@ -10,7 +11,7 @@ const fs = require('fs'),
       Coconut = require('../src/coconut'),
       prompts = require('../src/cli_prompts.json')
 
-const HASH_FILE = os.homedir() + '/.local/share/coconut'
+const HASH_FILE = path.join(os.homedir(), '.coconut')
 const passwordGenerator = new PasswordGenerator()
 
 prompt.message = ''
@@ -38,7 +39,10 @@ function createDB(hash) {
   } else {
     promptHandler(prompts.masterPassword, (error, result) => {
       let coconut = new Coconut(result.masterPassword)
-      writeHash(coconut.hash)
+      coconut.addEntry('Coconut', undefined, result.masterPasssword, 'http://coco.nut', 'This is created to create a hash')
+        .then(() => {
+          writeHash(coconut.hash)
+        })
     })
   }
 }

@@ -25,6 +25,7 @@
     "ipfs-api": "latest",
     "orbit-db": "latest",
     "prompt": "^1.0.0",
+    "request": "^2.79.0",
     "strict-password-generator": "^1.1.0",
     "tweetnacl": "^0.14.3",
     "tweetnacl-util": "^0.13.3"

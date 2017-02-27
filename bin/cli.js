@@ -2,12 +2,13 @@
 
 const fs = require('fs'),
       os = require('os'),
-      path = require('path');
+      path = require('path'),
       program = require('commander'),
       prompt = require('prompt'),
-      clipboard = require('clipboardy');
+      clipboard = require('clipboardy'),
+      request = require('request'),
       PasswordGenerator = require('strict-password-generator').default,
-      packageJson = require('../package.json')
+      packageJson = require('../package.json'),
       Coconut = require('../src/core/coconut'),
       prompts = require('../src/cli/prompts.json')
 
@@ -19,13 +20,14 @@ const PASSWORD_OPTIONS = { exactLength: 50 }
 
 function openDB(callback) {
   readConfig(config => {
-    syncHash()
-    promptHandler(prompts.masterPassword, (error, result) => {
-      let coconut = new Coconut(result.masterPassword)
-      coconut.connect(config.hash)
-        .then(() => {
-          callback(coconut)
-        }).catch((err) => console.error(err.message))
+    syncHash(config, () => {
+      promptHandler(prompts.masterPassword, (error, result) => {
+        let coconut = new Coconut(result.masterPassword)
+        coconut.connect(config.hash)
+          .then(() => {
+            callback(coconut)
+          }).catch((err) => console.error(err.message))
+      })
     })
   })
 }
@@ -44,6 +46,23 @@ function createDB(hash) {
   }
 }
 
+function syncHash(config, callback) {
+  if (config.server) {
+    request(config.server, (error, response, body) => {
+      if (!error && response.statusCode === 200 && body !== 'undefined') {
+        config.hash = body
+        writeHash(body, () => {
+          callback()
+        }, true)
+      } else {
+        callback()
+      }
+    })
+  } else {
+    callback()
+  }
+}
+
 function readConfig(callback) {
   fs.readFile(CONFIG_FILE, (error, data) => {
     if (error) {
@@ -56,10 +75,13 @@ function readConfig(callback) {
   })
 }
 
-function writeHash(hash, callback) {
+function writeHash(hash, callback, avoidSync) {
   readConfig(config => {
     config.hash = hash
     writeConfig(config, callback)
+    if (!avoidSync) {
+      request.post(config.server).form({ hash })
+    }
   })
 }
 

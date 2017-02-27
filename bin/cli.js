@@ -11,17 +11,17 @@ const fs = require('fs'),
       Coconut = require('../src/core/coconut'),
       prompts = require('../src/cli/prompts.json')
 
-const HASH_FILE = path.join(os.homedir(), '.coconut')
+const CONFIG_FILE = path.join(os.homedir(), '.coconut')
 const passwordGenerator = new PasswordGenerator()
 
 prompt.message = ''
 const PASSWORD_OPTIONS = { exactLength: 50 }
 
 function openDB(callback) {
-  readHash(hash => {
+  readConfig(config => {
     promptHandler(prompts.masterPassword, (error, result) => {
       let coconut = new Coconut(result.masterPassword)
-      coconut.connect(hash)
+      coconut.connect(config.hash)
         .then(() => {
           callback(coconut)
         }).catch((err) => console.error(err.message))
@@ -37,26 +37,35 @@ function createDB(hash) {
       let coconut = new Coconut(result.masterPassword)
       coconut.addEntry('Coconut', undefined, result.masterPassword, 'http://coco.nut', 'This is created to create a hash')
         .then(() => {
-          writeHash(coconut.hash)
+          writeConfig({ hash: coconut.hash })
         })
     })
   }
 }
 
-function readHash(callback) {
-  fs.readFile(HASH_FILE, (error, data) => {
+function readConfig(callback) {
+  fs.readFile(CONFIG_FILE, (error, data) => {
     if (error) {
       console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
       process.exit()
     } else {
-      callback(data.toString().trim())
+      let config = JSON.parse(data.toString())
+      callback(config)
     }
   })
 }
 
 function writeHash(hash, callback) {
+  readConfig(config => {
+    config.hash = hash
+    writeConfig(config)
+  })
+}
+
+function writeConfig(config, callback) {
   callback = callback || (error => error && console.error(error))
-  fs.writeFile(HASH_FILE, hash, callback)
+  config = JSON.stringify(config)
+  fs.writeFile(CONFIG_FILE, config, callback)
 }
 
 function promptHandler(questions, callback) {

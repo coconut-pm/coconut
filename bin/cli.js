@@ -19,6 +19,7 @@ const PASSWORD_OPTIONS = { exactLength: 50 }
 
 function openDB(callback) {
   readConfig(config => {
+    syncHash()
     promptHandler(prompts.masterPassword, (error, result) => {
       let coconut = new Coconut(result.masterPassword)
       coconut.connect(config.hash)
@@ -37,10 +38,7 @@ function createDB(hash) {
       let coconut = new Coconut(result.masterPassword)
       coconut.addEntry('Coconut', undefined, result.masterPassword, 'http://coco.nut', 'This is created to create a hash')
         .then(() => {
-          writeConfig({
-            hash: coconut.hash,
-            servers: []
-          })
+          writeConfig({ hash: coconut.hash })
         })
     })
   }
@@ -67,24 +65,21 @@ function writeHash(hash, callback) {
 
 function addServer(address) {
   readConfig(config => {
-    config.servers.push(address)
+    config.server = address
     writeConfig(config)
   })
 }
 
 function removeServer() {
   readConfig(config => {
-    config.servers.forEach((server, index) => console.log(index + ':', server))
-    promptHandler(prompts.removeServer, (error, result) => {
-      config.servers.splice(result.index, 1)
-      writeConfig(config)
-    })
+    delete config.server
+    writeConfig(config)
   })
 }
 
-function listServers() {
+function printServer() {
   readConfig(config => {
-    config.servers.forEach(server => console.log(server))
+    console.log(config.server || 'You have not connected to a server yet.')
   })
 }
 
@@ -247,17 +242,16 @@ program
 
 program
   .command('server')
-  .option('-a, --add <address>', 'Add a server to sync with')
+  .option('-s, --set <address>', 'Set a server to sync with')
   .option('-r, --remove', 'Remove a server')
-  .option('-l, --list', 'List connected servers')
-  .description('Handle servers')
+  .description('Handle server')
   .action(options => {
-    if (options.add) {
-      addServer(options.add)
+    if (options.set) {
+      addServer(options.set)
     } else if (options.remove) {
       removeServer()
     } else {
-      listServers()
+      printServer()
     }
   })
 

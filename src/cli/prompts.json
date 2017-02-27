@@ -51,6 +51,13 @@
                 "message": "Are you sure you want to overwrite this service? (y/N)"
             }
         }
+    },
+    "removeServer": {
+        "properties": {
+            "index": {
+                "message": "Choose a server"
+            }
+        }
     }
 }
 

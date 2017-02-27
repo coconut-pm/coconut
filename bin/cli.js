@@ -37,7 +37,10 @@ function createDB(hash) {
       let coconut = new Coconut(result.masterPassword)
       coconut.addEntry('Coconut', undefined, result.masterPassword, 'http://coco.nut', 'This is created to create a hash')
         .then(() => {
-          writeConfig({ hash: coconut.hash })
+          writeConfig({
+            hash: coconut.hash,
+            servers: []
+          })
         })
     })
   }
@@ -58,7 +61,30 @@ function readConfig(callback) {
 function writeHash(hash, callback) {
   readConfig(config => {
     config.hash = hash
+    writeConfig(config, callback)
+  })
+}
+
+function addServer(address) {
+  readConfig(config => {
+    config.servers.push(address)
     writeConfig(config)
+  })
+}
+
+function removeServer() {
+  readConfig(config => {
+    config.servers.forEach((server, index) => console.log(index + ':', server))
+    promptHandler(prompts.removeServer, (error, result) => {
+      config.servers.splice(result.index, 1)
+      writeConfig(config)
+    })
+  })
+}
+
+function listServers() {
+  readConfig(config => {
+    config.servers.forEach(server => console.log(server))
   })
 }
 
@@ -217,7 +243,23 @@ program
 program
   .command('add')
   .description('Add an entry')
-  .action(() => openDB(add));
+  .action(() => openDB(add))
+
+program
+  .command('server')
+  .option('-a, --add <address>', 'Add a server to sync with')
+  .option('-r, --remove', 'Remove a server')
+  .option('-l, --list', 'List connected servers')
+  .description('Handle servers')
+  .action(options => {
+    if (options.add) {
+      addServer(options.add)
+    } else if (options.remove) {
+      removeServer()
+    } else {
+      listServers()
+    }
+  })
 
 program
   .command('hash')

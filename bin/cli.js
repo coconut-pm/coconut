@@ -8,6 +8,7 @@ const fs = require('fs'),
       clipboard = require('clipboardy'),
       request = require('request'),
       PasswordGenerator = require('strict-password-generator').default,
+      multihash = require('multihashes'),
       packageJson = require('../package.json'),
       Coconut = require('../src/core/coconut'),
       prompts = require('../src/cli/prompts.json')
@@ -18,11 +19,15 @@ const passwordGenerator = new PasswordGenerator()
 prompt.message = ''
 const PASSWORD_OPTIONS = { exactLength: 50 }
 
+let passwordHash;
+
 function openDB(callback) {
   readConfig(config => {
-    syncHash(config, () => {
-      promptHandler(prompts.masterPassword, (error, result) => {
-        let coconut = new Coconut(result.masterPassword)
+    promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
+      let passwordBuffer = new Buffer(masterPassword, 'hex')
+      passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
+      syncHash(config, () => {
+        let coconut = new Coconut(masterPassword)
         coconut.connect(config.hash)
           .then(() => {
             callback(coconut)
@@ -46,9 +51,10 @@ function createDB(hash) {
   }
 }
 
-function syncHash(config, callback) {
-  if (config.server) {
-    request(config.server, (error, response, body) => {
+function syncHash({ server }, callback) {
+  if (server) {
+    let url = server + '?password=' + passwordHash
+    request(url, (error, response, body) => {
       if (!error && response.statusCode === 200 && body !== 'undefined') {
         config.hash = body
         writeHash(body, () => {
@@ -80,7 +86,7 @@ function writeHash(hash, callback, avoidSync) {
     config.hash = hash
     writeConfig(config, callback)
     if (!avoidSync) {
-      request.post(config.server).form({ hash })
+      request.post(config.server).form({ hash, password: passwordHash })
     }
   })
 }

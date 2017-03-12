@@ -23,6 +23,8 @@
     "express": "^4.14.1",
     "ipfs": "latest",
     "ipfs-api": "latest",
+    "multihashes": "^0.4.3",
+    "node-persist": "^2.0.10",
     "orbit-db": "latest",
     "prompt": "^1.0.0",
     "request": "^2.79.0",

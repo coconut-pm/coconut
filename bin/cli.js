@@ -106,7 +106,10 @@ function writeHash(hash, callback, avoidSync) {
 }
 
 function addServer(address) {
-  safeReadConfig(config => {
+  readConfig((err, config) => {
+    if (err) {
+      config = {}
+    }
     config.server = address
     writeConfig(config)
   })

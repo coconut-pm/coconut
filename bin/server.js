@@ -3,15 +3,12 @@
 const express = require('express'),
       bodyParser = require('body-parser'),
       IpfsAPI = require('ipfs-api'),
-      OrbitDB = require('orbit-db'),
       storage = require('node-persist')
 
 const DB_NAME = 'coconut'
 
 const app = express()
 const ipfs = new IpfsAPI()
-const orbitdb = new OrbitDB(ipfs)
-const store = orbitdb.feed(DB_NAME)
 
 storage.initSync()
 
@@ -29,7 +26,6 @@ app.post('/', (req, res) => {
   let hash = req.body.hash
   storage.setItem(password, hash).catch(errorHandler)
   pinObjects(hash)
-  //store.sync(hash).catch(errorHandler)
   res.end()
 })
 

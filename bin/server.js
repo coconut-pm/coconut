@@ -2,6 +2,8 @@
 
 const express = require('express'),
       bodyParser = require('body-parser'),
+      fs = require('fs'),
+      path = require('path'),
       request = require('request'),
       IpfsAPI = require('ipfs-api'),
       storage = require('node-persist')
@@ -17,10 +19,14 @@ storage.initSync()
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.get('/', (req, res) => {
-  let password = req.query.password
-  storage.getItem(password)
-    .then(res.send.bind(res))
-    .catch(error => console.error(error.message))
+  if (req.query.password) {
+    let password = req.query.password
+    storage.getItem(password)
+      .then(res.send.bind(res))
+      .catch(error => console.error(error.message))
+  } else {
+    res.sendFile(path.resolve('src/www/resources/coconut.svg'))
+  }
 })
 
 app.post('/', (req, res) => {

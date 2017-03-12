@@ -280,7 +280,7 @@ program
 program
   .command('hash')
   .description('Get current root hash')
-  .action(() => openDB(coconut => console.log(coconut.hash)))
+  .action(() => readConfig(config => console.log(config.hash)))
 
 program.parse(process.argv)
 

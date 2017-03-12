@@ -2,6 +2,7 @@
 
 const express = require('express'),
       bodyParser = require('body-parser'),
+      request = require('request'),
       IpfsAPI = require('ipfs-api'),
       storage = require('node-persist')
 
@@ -9,6 +10,7 @@ const DB_NAME = 'coconut'
 
 const app = express()
 const ipfs = new IpfsAPI()
+const servers = process.argv.slice(2)
 
 storage.initSync()
 
@@ -18,26 +20,28 @@ app.get('/', (req, res) => {
   let password = req.query.password
   storage.getItem(password)
     .then(res.send.bind(res))
-    .catch(errorHandler)
+    .catch(error => console.error(error.message))
 })
 
 app.post('/', (req, res) => {
   let password = req.body.password
   let hash = req.body.hash
-  storage.setItem(password, hash).catch(errorHandler)
+  storage.setItem(password, hash)
+    .catch(error => console.error(error.message))
   pinObjects(hash)
+  sendToServers(password, hash)
   res.end()
 })
-
-function errorHandler(error) {
-  if (error) {
-    console.error(error)
-  }
-}
 
 app.listen(9000, () => {
   console.log('Server running on port 9000.')
 })
+
+function sendToServers(password, hash) {
+  servers.forEach(server => {
+    request.post(server).form({ hash, password })
+  })
+}
 
 function pinObjects(hash) {
   ipfs.pin.add(hash)

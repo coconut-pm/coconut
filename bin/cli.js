@@ -52,9 +52,9 @@ function openOrCreateDB(callback) {
   })
 }
 
-function syncHash({ server }, callback) {
-  if (server) {
-    let url = server + '?password=' + passwordHash
+function syncHash(config, callback) {
+  if (config.server) {
+    let url = config.server + '?password=' + passwordHash
     request(url, (error, response, body) => {
       if (!error && response.statusCode === 200 && body !== 'undefined') {
         config.hash = body

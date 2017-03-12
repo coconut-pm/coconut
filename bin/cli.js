@@ -23,10 +23,9 @@ let passwordHash;
 
 function openCoconut(config, callback) {
   promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
-    let passwordBuffer = new Buffer(masterPassword, 'hex')
-    passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
+    let coconut = new Coconut(masterPassword)
+    passwordHash = coconut.keyHash
     syncHash(config, () => {
-      let coconut = new Coconut(masterPassword)
       coconut.connect(config.hash)
         .then(() => {
           callback(coconut)
@@ -43,9 +42,8 @@ function openOrCreateDB(callback) {
   readConfig((err, config) => {
     if(err) {
       promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
-        let passwordBuffer = new Buffer(masterPassword, 'hex')
-        passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
         let coconut = new Coconut(masterPassword)
+        passwordHash = coconut.keyHash
         callback(coconut)
       })
     } else {

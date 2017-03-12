@@ -3,7 +3,7 @@ const IPFS = require('ipfs-api'),
       utils = require('./utils'),
       Encryption = require('./encryption.js')
 
-const DB_NAME = 'coconut'
+const DB_NAME = 'coconut1'
 
 class DB {
   constructor(password = mandatory(), ipfs = new IPFS()) {

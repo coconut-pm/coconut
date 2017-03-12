@@ -22,7 +22,7 @@ const PASSWORD_OPTIONS = { exactLength: 50 }
 let passwordHash;
 
 function openDB(callback) {
-  readConfig(config => {
+  safeReadConfig(config => {
     promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
       let passwordBuffer = new Buffer(masterPassword, 'hex')
       passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
@@ -37,18 +37,25 @@ function openDB(callback) {
   })
 }
 
-function createDB(hash) {
-  if (hash) {
-    writeHash(hash)
-  } else {
-    promptHandler(prompts.masterPassword, (error, result) => {
-      let coconut = new Coconut(result.masterPassword)
-      coconut.addEntry('Coconut', undefined, result.masterPassword, 'http://coco.nut', 'This is created to create a hash')
-        .then(() => {
-          writeConfig({ hash: coconut.hash })
+function openOrCreateDB(callback) {
+  readConfig((err, config) => {
+    promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
+      let passwordBuffer = new Buffer(masterPassword, 'hex')
+      passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
+      if(err) {
+        let coconut = new Coconut(masterPassword)
+        callback(coconut)
+      } else {
+        syncHash(config, () => {
+          let coconut = new Coconut(masterPassword)
+          coconut.connect(config.hash)
+            .then(() => {
+              callback(coconut)
+            }).catch((err) => console.error(err.message))
         })
+      }
     })
-  }
+  })
 }
 
 function syncHash({ server }, callback) {
@@ -72,41 +79,54 @@ function syncHash({ server }, callback) {
 function readConfig(callback) {
   fs.readFile(CONFIG_FILE, (error, data) => {
     if (error) {
-      console.log('Coconut is not initialized. \nPlease run \'coconut init\'')
-      process.exit()
+      callback(error)
     } else {
       let config = JSON.parse(data.toString())
-      callback(config)
+      callback(null, config)
     }
   })
 }
 
+function safeReadConfig(callback) {
+  readConfig((err, config) => {
+    if (err) {
+      console.log('Coconut is not initialized. \nRun \'coconut add\' to get started.')
+      process.exit()
+    }
+    callback(config)
+  })
+}
+
+
 function writeHash(hash, callback, avoidSync) {
-  readConfig(config => {
+  readConfig((err, config) => {
+    if (err) {
+      config = {}
+    }
     config.hash = hash
     writeConfig(config, callback)
-    if (!avoidSync) {
+    if (config.server && !avoidSync) {
       request.post(config.server).form({ hash, password: passwordHash })
     }
   })
 }
 
 function addServer(address) {
-  readConfig(config => {
+  safeReadConfig(config => {
     config.server = address
     writeConfig(config)
   })
 }
 
 function removeServer() {
-  readConfig(config => {
+  safeReadConfig(config => {
     delete config.server
     writeConfig(config)
   })
 }
 
 function printServer() {
-  readConfig(config => {
+  safeReadConfig(config => {
     console.log(config.server || 'You have not connected to a server yet.')
   })
 }
@@ -245,11 +265,6 @@ program
   .version(packageJson.version)
 
 program
-  .command('init [hash]')
-  .description('Initialize the password database')
-  .action(createDB)
-
-program
   .command('list')
   .description('List of all entries')
   .action(() => openDB(listEntries));
@@ -266,7 +281,7 @@ program
 program
   .command('add')
   .description('Add an entry')
-  .action(() => openDB(add))
+  .action(() => openOrCreateDB(add))
 
 program
   .command('server')
@@ -286,7 +301,7 @@ program
 program
   .command('hash')
   .description('Get current root hash')
-  .action(() => readConfig(config => console.log(config.hash)))
+  .action(() => safeReadConfig(config => console.log(config.hash)))
 
 program.parse(process.argv)
 

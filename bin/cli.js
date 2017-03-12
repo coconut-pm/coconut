@@ -21,40 +21,36 @@ const PASSWORD_OPTIONS = { exactLength: 50 }
 
 let passwordHash;
 
-function openDB(callback) {
-  safeReadConfig(config => {
-    promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
-      let passwordBuffer = new Buffer(masterPassword, 'hex')
-      passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
-      syncHash(config, () => {
-        let coconut = new Coconut(masterPassword)
-        coconut.connect(config.hash)
-          .then(() => {
-            callback(coconut)
-          }).catch((err) => console.error(err.message))
-      })
+function openCoconut(config, callback) {
+  promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
+    let passwordBuffer = new Buffer(masterPassword, 'hex')
+    passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
+    syncHash(config, () => {
+      let coconut = new Coconut(masterPassword)
+      coconut.connect(config.hash)
+        .then(() => {
+          callback(coconut)
+        }).catch((err) => console.error(err.message))
     })
   })
 }
 
+function openDB(callback) {
+  safeReadConfig(config => openCoconut(config, callback))
+}
+
 function openOrCreateDB(callback) {
   readConfig((err, config) => {
-    promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
-      let passwordBuffer = new Buffer(masterPassword, 'hex')
-      passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
-      if(err) {
+    if(err) {
+      promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
+        let passwordBuffer = new Buffer(masterPassword, 'hex')
+        passwordHash = multihash.encode(passwordBuffer, 'sha3-256')
         let coconut = new Coconut(masterPassword)
         callback(coconut)
-      } else {
-        syncHash(config, () => {
-          let coconut = new Coconut(masterPassword)
-          coconut.connect(config.hash)
-            .then(() => {
-              callback(coconut)
-            }).catch((err) => console.error(err.message))
-        })
-      }
-    })
+      })
+    } else {
+      openCoconut(config, callback)
+    }
   })
 }
 

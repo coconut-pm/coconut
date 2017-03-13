@@ -1,5 +1,5 @@
 const expect    = require('chai').expect
-const enc       = require('../src/encryption')
+const enc       = require('../src/core/encryption')
 
 describe('Encryption functions', () => {
   let key

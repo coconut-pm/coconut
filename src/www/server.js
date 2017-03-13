@@ -5,6 +5,7 @@ const path = require('path'),
 const app = express()
 
 app.use('/modules', serveStatic(path.resolve('../../node_modules/')))
+app.use('/core', serveStatic(path.resolve('../core/')))
 app.use('/', serveStatic(path.resolve('static/')))
 app.use('/', serveStatic(path.resolve('resources/')))
 

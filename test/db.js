@@ -1,5 +1,5 @@
 const expect = require('chai').expect,
-      DB = require('../src/db')
+      DB = require('../src/core/db')
       ipfsd = require('ipfsd-ctl')
 
 describe('Communication with orbit-db-feedstore', function() {

@@ -1,4 +1,6 @@
-const DB = require('./db.js')
+if (typeof window === 'undefined') {
+  DB = require('./db.js')
+}
 
 class Coconut extends DB {
   addEntry(service, username, password, url, notes) {
@@ -43,6 +45,10 @@ class Coconut extends DB {
 
 }
 
-module.exports = Coconut
+if (typeof window === 'undefined') {
+  module.exports = Coconut
+} else {
+  window.Coconut = Coconut
+}
 
 // vim: sw=2

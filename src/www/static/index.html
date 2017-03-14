@@ -15,6 +15,11 @@
     <script src="script.js"></script>
 </head>
 <body>
+    <form name="server" onsubmit="return setServer(this)">
+        <input type="url" name="server" />
+        <input type="submit" value="Save" />
+    </form>
+
     <form onsubmit="return passwordEntered(this)">
         <span id="incorrectPassword"></span>
         <input type="password" name="password" />
@@ -33,7 +38,7 @@
     </div>
 
     <a href="#" onclick="add()" />+</a>
-    <form name="modify" onsubmit="return doModify()">
+    <form name="modify" onsubmit="return doModify(this)">
         <input type="text" name="service" placeholder="Service" />
         <input type="text" name="username" placeholder="Username" />
         <input type="password" name="password" placeholder="Password" />

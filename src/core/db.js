@@ -9,7 +9,7 @@ if (typeof window === 'undefined') {
 class DB {
   constructor(password = mandatory(), ipfs = new IpfsApi()) {
     this.key = Encryption.expandKey(password)
-    this.passwordHash = CryptoJS.SHA3(password)
+    this.passwordHash = CryptoJS.SHA3(password).toString()
 
     let orbitdb = new OrbitDB(ipfs)
     this.store = orbitdb.feed(this.passwordHash)

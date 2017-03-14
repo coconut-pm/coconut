@@ -1,11 +1,25 @@
 let coconut
 let modifyFunction
 
+window.onload = () => {
+  document.forms.server.server.value = localStorage.getItem('server')
+}
+
 function passwordEntered(form) {
   let password = form.password.value
   coconut = new Coconut(password)
 
-  let hash = localStorage.getItem('hash')
+  syncHash()
+    .then(openCoconut)
+    .catch(() => {
+      let hash = localStorage.getItem('hash')
+      openCoconut(hash)
+    })
+
+  return false
+}
+
+function openCoconut(hash) {
   if (hash) {
     coconut.connect(hash)
       .then(() => {
@@ -15,12 +29,38 @@ function passwordEntered(form) {
         document.querySelector('#incorrectPassword').textContent = 'Wrong password'
       })
   }
+}
 
-  return false
+function syncHash() {
+  return new Promise((resolve, reject) => {
+    let url = localStorage.getItem('server') + "?password=" + coconut.passwordHash
+    let http = new XMLHttpRequest()
+    http.open("GET", url, true)
+    http.onreadystatechange = () => {
+      if (http.readyState == 4) {
+        if (http.status == 200) {
+          resolve(http.responseText.trim())
+        } else {
+          reject()
+        }
+      }
+    }
+    http.send()
+  })
 }
 
 function updateHash() {
-  localStorage.setItem('hash', coconut.hash)
+  let hash = coconut.hash
+  let password = coconut.passwordHash
+  let server = localStorage.getItem('server')
+
+  localStorage.setItem('hash', hash)
+
+  let http = new XMLHttpRequest();
+  var params = "hash=" + hash + "&password=" + password;
+  http.open("POST", server, true);
+  http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  http.send(params);
 }
 
 function list() {
@@ -48,13 +88,13 @@ function remove(hash) {
     .then(modified)
 }
 
-function doModify() {
+function doModify(form) {
   modifyFunction(
-    document.forms.modify.service.value,
-    document.forms.modify.username.value,
-    document.forms.modify.password.value,
-    document.forms.modify.url.value,
-    document.forms.modify.notes.value
+    form.service.value,
+    form.username.value,
+    form.password.value,
+    form.url.value,
+    form.notes.value
   ).then(modified)
 
   return false
@@ -71,6 +111,11 @@ function show(hash) {
   document.querySelector('#username').textContent = entry.username
   document.querySelector('#url').textContent = entry.url
   document.querySelector('#notes').textContent = entry.notes
+}
+
+function setServer(form) {
+  localStorage.setItem('server', form.server.value)
+  return false
 }
 
 // vim: sw=2

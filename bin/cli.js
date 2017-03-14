@@ -24,7 +24,7 @@ let passwordHash;
 function openCoconut(config, callback) {
   promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
     let coconut = new Coconut(masterPassword)
-    passwordHash = coconut.keyHash
+    passwordHash = coconut.passwordHash
     syncHash(config, () => {
       coconut.connect(config.hash)
         .then(() => {
@@ -43,7 +43,7 @@ function openOrCreateDB(callback) {
     if(err) {
       promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
         let coconut = new Coconut(masterPassword)
-        passwordHash = coconut.keyHash
+        passwordHash = coconut.passwordHash
         callback(coconut)
       })
     } else {

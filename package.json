@@ -21,6 +21,7 @@
     "clipboardy": "^0.1.2",
     "commander": "^2.9.0",
     "cors": "^2.8.1",
+    "crypto-js": "^3.1.9-1",
     "express": "^4.14.1",
     "ipfs": "latest",
     "ipfs-api": "latest",
@@ -29,6 +30,7 @@
     "orbit-db": "latest",
     "prompt": "^1.0.0",
     "request": "^2.79.0",
+    "serve-static": "^1.12.1",
     "strict-password-generator": "^1.1.0",
     "tweetnacl": "^0.14.3",
     "tweetnacl-util": "^0.13.3"

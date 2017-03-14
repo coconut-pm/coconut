@@ -1,19 +1,18 @@
-const IPFS = require('ipfs-api'),
-      multihash = require('multihashes'),
-      OrbitDB = require('orbit-db'),
-      utils = require('./utils'),
-      Encryption = require('./encryption.js')
-
-const DB_NAME = 'coconut1'
+if (typeof window === 'undefined') {
+  IpfsApi = require('ipfs-api')
+  CryptoJS = require('crypto-js')
+  OrbitDB = require('orbit-db')
+  utils = require('./utils')
+  Encryption = require('./encryption.js')
+}
 
 class DB {
-  constructor(password = mandatory(), ipfs = new IPFS()) {
+  constructor(password = mandatory(), ipfs = new IpfsApi()) {
     this.key = Encryption.expandKey(password)
-    let passwordBuffer = Buffer.from(this.key)
-    this.keyHash = multihash.toB58String(multihash.encode(passwordBuffer, 'sha3-256'))
+    this.passwordHash = CryptoJS.SHA3(password).toString()
 
     let orbitdb = new OrbitDB(ipfs)
-    this.store = orbitdb.feed(this.keyHash)
+    this.store = orbitdb.feed(this.passwordHash)
     this.store.events.on('write', (dbname, hash) => {
       this._hash = hash
     })
@@ -85,7 +84,11 @@ class DB {
   }
 }
 
-module.exports = DB
+if (typeof window === 'undefined') {
+  module.exports = DB
+} else {
+  window.DB = DB
+}
 
 // vim: sw=2
 

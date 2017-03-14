@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coconut</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="modules/ipfs-api/dist/index.js"></script>
+    <script src="modules/orbit-db/dist/orbitdb.min.js"></script>
+    <script src="modules/crypto-js/crypto-js.js"></script>
+    <script src="modules/tweetnacl/nacl-fast.min.js"></script>
+    <script src="modules/tweetnacl-util/nacl-util.min.js"></script>
+    <script src="core/utils.js"></script>
+    <script src="core/encryption.js"></script>
+    <script src="core/db.js"></script>
+    <script src="core/coconut.js"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <form name="server" onsubmit="return setServer(this)">
+        <input type="url" name="server" />
+        <input type="submit" value="Save" />
+    </form>
+
+    <form onsubmit="return passwordEntered(this)">
+        <span id="incorrectPassword"></span>
+        <input type="password" name="password" />
+        <input type="submit" value="Please open my coconut" />
+    </form>
+
+    <ul>
+    </ul>
+
+    <div id="entry">
+        <div>Service: <span id="service"></span></div>
+        <div>Username: <span id="username"></span></div>
+        <div>URL: <span id="url"></span></div>
+        <div>Notes: <span id="notes"></span></div>
+        <a href="#">Copy password (Not implemented yet)</a>
+    </div>
+
+    <a href="#" onclick="add()" />+</a>
+    <form name="modify" onsubmit="return doModify(this)">
+        <input type="text" name="service" placeholder="Service" />
+        <input type="text" name="username" placeholder="Username" />
+        <input type="password" name="password" placeholder="Password" />
+        <input type="url" name="url" placeholder="URL" />
+        <input type="text" name="notes" placeholder="Notes" />
+        <input type="submit" value="Go!" />
+    </form>
+</body>
+</html>

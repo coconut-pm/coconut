@@ -2,8 +2,10 @@
 
 const express = require('express'),
       bodyParser = require('body-parser'),
+      fs = require('fs'),
+      path = require('path'),
+      request = require('request'),
       IpfsAPI = require('ipfs-api'),
-      OrbitDB = require('orbit-db'),
       storage = require('node-persist'),
       cors = require('cors')
 
@@ -11,8 +13,7 @@ const DB_NAME = 'coconut'
 
 const app = express()
 const ipfs = new IpfsAPI()
-const orbitdb = new OrbitDB(ipfs)
-const store = orbitdb.feed(DB_NAME)
+const servers = process.argv.slice(2)
 
 storage.initSync()
 
@@ -20,30 +21,35 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.get('/', (req, res) => {
-  let password = req.query.password
-  storage.getItem(password)
-    .then(res.send.bind(res))
-    .catch(errorHandler)
+  if (req.query.password) {
+    let password = req.query.password
+    storage.getItem(password)
+      .then(res.send.bind(res))
+      .catch(error => console.error(error.message))
+  } else {
+    res.sendFile(path.resolve('src/www/resources/coconut.svg'))
+  }
 })
 
 app.post('/', (req, res) => {
   let password = req.body.password
   let hash = req.body.hash
-  storage.setItem(password, hash).catch(errorHandler)
+  storage.setItem(password, hash)
+    .catch(error => console.error(error.message))
   pinObjects(hash)
-  //store.sync(hash).catch(errorHandler)
+  sendToServers(password, hash)
   res.end()
 })
-
-function errorHandler(error) {
-  if (error) {
-    console.error(error)
-  }
-}
 
 app.listen(9000, () => {
   console.log('Server running on port 9000.')
 })
+
+function sendToServers(password, hash) {
+  servers.forEach(server => {
+    request.post(server).form({ hash, password })
+  })
+}
 
 function pinObjects(hash) {
   ipfs.pin.add(hash)

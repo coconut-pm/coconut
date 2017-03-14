@@ -20,7 +20,26 @@
         <input type="password" name="password" />
         <input type="submit" value="Please open my coconut" />
     </form>
+
     <ul>
     </ul>
+
+    <div id="entry">
+        <div>Service: <span id="service"></span></div>
+        <div>Username: <span id="username"></span></div>
+        <div>URL: <span id="url"></span></div>
+        <div>Notes: <span id="notes"></span></div>
+        <a href="#">Copy password (Not implemented yet)</a>
+    </div>
+
+    <a href="#" onclick="add()" />+</a>
+    <form name="modify" onsubmit="return doModify()">
+        <input type="text" name="service" placeholder="Service" />
+        <input type="text" name="username" placeholder="Username" />
+        <input type="password" name="password" placeholder="Password" />
+        <input type="url" name="url" placeholder="URL" />
+        <input type="text" name="notes" placeholder="Notes" />
+        <input type="submit" value="Go!" />
+    </form>
 </body>
 </html>

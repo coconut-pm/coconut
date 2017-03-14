@@ -4,7 +4,8 @@ const express = require('express'),
       bodyParser = require('body-parser'),
       IpfsAPI = require('ipfs-api'),
       OrbitDB = require('orbit-db'),
-      storage = require('node-persist')
+      storage = require('node-persist'),
+      cors = require('cors')
 
 const DB_NAME = 'coconut'
 
@@ -15,6 +16,7 @@ const store = orbitdb.feed(DB_NAME)
 
 storage.initSync()
 
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 app.get('/', (req, res) => {

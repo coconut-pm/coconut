@@ -34,8 +34,7 @@ app.get('/', (req, res) => {
 app.post('/', (req, res) => {
   let password = req.body.password
   let hash = req.body.hash
-  storage.setItem(password, hash)
-    .catch(error => console.error(error.message))
+  setTimeout(storage.setItemSync.bind(storage, password, hash))
   pinObjects(hash)
   sendToServers(password, hash)
   res.end()

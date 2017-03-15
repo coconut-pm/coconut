@@ -75,6 +75,13 @@ function listItem(entry) {
   return `<li>${title} ${edit} ${remove}</li>`
 }
 
+function copyPassword() {
+  document.querySelector('#password').select()
+  if (!document.execCommand('copy')) {
+    alert('Your browser does not support this feature')
+  }
+}
+
 function add() {
   modifyFunction = coconut.addEntry.bind(coconut)
 }
@@ -111,6 +118,7 @@ function show(hash) {
   document.querySelector('#username').textContent = entry.username
   document.querySelector('#url').textContent = entry.url
   document.querySelector('#notes').textContent = entry.notes
+  document.querySelector('#password').value = entry.password
 }
 
 function setServer(form) {

@@ -38,8 +38,8 @@
         <a href="#" onclick="copyPassword()">Copy password</a>
     </div>
 
-    <a href="#" onclick="add()" />+</a>
-    <form name="modify" onsubmit="return doModify(this)">
+    <a id="add" href="#" onclick="add()" />+</a>
+    <form id="modify" name="modify" onsubmit="return doModify(this)">
         <input type="text" name="service" placeholder="Service" />
         <input type="text" name="username" placeholder="Username" />
         <input type="password" name="password" placeholder="Password" />

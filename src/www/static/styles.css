@@ -1,0 +1,12 @@
+body:not(.open) ul, body:not(.open) #add, #entry:not(.show), #modify:not(.show) {
+    display: none;
+}
+
+#password {
+    position: absolute;
+    top: -10000px;
+    left: -10000px;
+    width: 1px;
+    opacity: 0;
+}
+

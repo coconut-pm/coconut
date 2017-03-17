@@ -14,6 +14,7 @@ function passwordEntered(form) {
     .catch(() => {
       let hash = localStorage.getItem('hash')
       openCoconut(hash)
+        .then(() => document.querySelector('body').classList.add('open'))
     })
 
   return false
@@ -21,13 +22,16 @@ function passwordEntered(form) {
 
 function openCoconut(hash) {
   if (hash) {
-    coconut.connect(hash)
+    return coconut.connect(hash)
       .then(() => {
         document.querySelector('#incorrectPassword').textContent = ''
         list()
+        return Promise.resolve()
       }).catch(() => {
         document.querySelector('#incorrectPassword').textContent = 'Wrong password'
       })
+  } else {
+    return Promise.resolve()
   }
 }
 
@@ -56,11 +60,13 @@ function updateHash() {
 
   localStorage.setItem('hash', hash)
 
-  let http = new XMLHttpRequest();
-  var params = "hash=" + hash + "&password=" + password;
-  http.open("POST", server, true);
-  http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  http.send(params);
+  if (server) {
+    let http = new XMLHttpRequest();
+    var params = "hash=" + hash + "&password=" + password;
+    http.open("POST", server, true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+  }
 }
 
 function list() {
@@ -83,10 +89,12 @@ function copyPassword() {
 }
 
 function add() {
+  document.querySelector('#modify').classList.add('show')
   modifyFunction = coconut.addEntry.bind(coconut)
 }
 
 function edit(hash) {
+  document.querySelector('#modify').classList.add('show')
   modifyFunction = coconut.updateEntry.bind(coconut, hash)
 }
 
@@ -103,6 +111,7 @@ function doModify(form) {
     form.url.value,
     form.notes.value
   ).then(modified)
+  document.querySelector('#modify').classList.remove('show')
 
   return false
 }
@@ -113,6 +122,7 @@ function modified() {
 }
 
 function show(hash) {
+  document.querySelector('#entry').classList.add('show')
   let entry = coconut.get(hash).value
   document.querySelector('#service').textContent = entry.service
   document.querySelector('#username').textContent = entry.username

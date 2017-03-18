@@ -6,18 +6,17 @@ const fs = require('fs'),
       program = require('commander'),
       prompt = require('prompt'),
       clipboard = require('clipboardy'),
-      request = require('request'),
-      PasswordGenerator = require('strict-password-generator').default,
       multihash = require('multihashes'),
       packageJson = require('../package.json'),
       Coconut = require('../src/core/coconut'),
+      utils = require('../src/core/utils'),
+      serverCommunication = require('../src/core/serverCommunication'),
       prompts = require('../src/cli/prompts.json')
 
 const CONFIG_FILE = path.join(os.homedir(), '.coconut')
-const passwordGenerator = new PasswordGenerator()
 
 prompt.message = ''
-const PASSWORD_OPTIONS = { exactLength: 50 }
+const PASSWORD_LENGTH = 50
 
 let passwordHash;
 
@@ -54,17 +53,12 @@ function openOrCreateDB(callback) {
 
 function syncHash(config, callback) {
   if (config.server) {
-    let url = config.server + '?password=' + passwordHash
-    request(url, (error, response, body) => {
-      if (!error && response.statusCode === 200 && body !== 'undefined') {
-        config.hash = body
-        writeHash(body, () => {
+    serverCommunication.get(config.server, passwordHash)
+      .then(hash => {
+        writeHash(hash, () => {
           callback()
-        }, true)
-      } else {
-        callback()
-      }
-    })
+        })
+      }).catch(callback)
   } else {
     callback()
   }
@@ -100,7 +94,7 @@ function writeHash(hash, callback, avoidSync) {
     config.hash = hash
     writeConfig(config, callback)
     if (config.server && !avoidSync) {
-      request.post(config.server).form({ hash, password: passwordHash })
+      serverCommunication.post(config.server, passwordHash, hash)
     }
   })
 }
@@ -172,11 +166,6 @@ function copyPassword(entry) {
   }
 }
 
-function generatePassword() {
-  let password = passwordGenerator.generatePassword(PASSWORD_OPTIONS)
-  return password
-}
-
 function listEntries(coconut) {
   printEntries(coconut.entries, true)
 }
@@ -224,7 +213,7 @@ function get(coconut, entry) {
 
 function add(coconut) {
   promptHandler(prompts.add, (err, result) => {
-    result.password = result.password || generatePassword()
+    result.password = result.password || utils.generatePassword(PASSWORD_LENGTH)
     coconut.addEntry(result.service, result.username, result.password,
         result.url, result.notes)
       .then(() => writeHash(coconut.hash))
@@ -246,7 +235,7 @@ function remove(coconut, entry) {
 function update(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
   promptHandler(prompts.add, (err, result) => {
-    result.password = result.password || generatePassword()
+    result.password = result.password || utils.generatePassword(PASSWORD_LENGTH)
     promptHandler(prompts.update, (err2, result2) => {
       if (result2.confirm.toLowerCase() === 'y') {
         coconut.updateEntry(entry.hash, result.service, result.username, result.password,

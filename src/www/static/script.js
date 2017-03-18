@@ -6,66 +6,53 @@ window.onload = () => {
 }
 
 function passwordEntered(form) {
-  let password = form.password.value
-  coconut = new Coconut(password)
-
-  syncHash()
-    .then(openCoconut)
+  coconut = new Coconut(form.password.value)
+  getHash()
+    .then(coconut.connect.bind(coconut))
+    .then(loggedIn)
     .catch(() => {
-      let hash = localStorage.getItem('hash')
-      openCoconut(hash)
-        .then(() => document.querySelector('body').classList.add('open'))
+      document.querySelector('#incorrectPassword').textContent = 'Wrong password'
     })
 
   return false
 }
 
-function openCoconut(hash) {
-  if (hash) {
-    return coconut.connect(hash)
-      .then(() => {
-        document.querySelector('#incorrectPassword').textContent = ''
-        list()
-        return Promise.resolve()
-      }).catch(() => {
-        document.querySelector('#incorrectPassword').textContent = 'Wrong password'
-      })
+function getHash() {
+  return getRemoteHash()
+    .catch(getLocalHash)
+}
+
+function getRemoteHash() {
+  let server = localStorage.getItem('server')
+  if (server) {
+    return serverCommunication.get(server, coconut.passwordHash)
   } else {
-    return Promise.resolve()
+    return Promise.reject()
   }
 }
 
-function syncHash() {
-  return new Promise((resolve, reject) => {
-    let url = localStorage.getItem('server') + "?password=" + coconut.passwordHash
-    let http = new XMLHttpRequest()
-    http.open("GET", url, true)
-    http.onreadystatechange = () => {
-      if (http.readyState == 4) {
-        if (http.status == 200) {
-          resolve(http.responseText.trim())
-        } else {
-          reject()
-        }
-      }
-    }
-    http.send()
-  })
+function getLocalHash() {
+  let hash = localStorage.getItem('hash')
+  if (hash) {
+    return hash
+  } else {
+    throw ''
+  }
+}
+
+function loggedIn() {
+  document.querySelector('#incorrectPassword').textContent = ''
+  list()
+  document.querySelector('body').classList.add('open')
 }
 
 function updateHash() {
   let hash = coconut.hash
-  let password = coconut.passwordHash
   let server = localStorage.getItem('server')
 
   localStorage.setItem('hash', hash)
-
   if (server) {
-    let http = new XMLHttpRequest();
-    var params = "hash=" + hash + "&password=" + password;
-    http.open("POST", server, true);
-    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    http.send(params);
+    serverCommunication.post(server, coconut.passwordHash, hash)
   }
 }
 
@@ -112,6 +99,7 @@ function doModify(form) {
     form.notes.value
   ).then(modified)
   document.querySelector('#modify').classList.remove('show')
+  form.reset()
 
   return false
 }

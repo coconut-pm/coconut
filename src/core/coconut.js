@@ -21,9 +21,6 @@ class Coconut extends DB {
 
   updateEntry(hash = mandatory(), service, username, password, url, notes) {
     return new Promise((resolve, reject) => {
-      if (this.search(service).length) {
-        reject(Error('The given service already exist, use updateEntry instead.'))
-      }
       var entry = this.get(hash)
       entry.service = service || entry.service
       entry.username = username || entry.username

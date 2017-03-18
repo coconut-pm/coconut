@@ -52,6 +52,7 @@ function updateHash() {
   localStorage.setItem('hash', hash)
   if (server) {
     serverCommunication.post(server, coconut.passwordHash, hash)
+      .catch(alert.bind(this, 'Server is unreachable. This modification will be overwritten when the server is reachable again.'))
   }
 }
 
@@ -75,13 +76,22 @@ function copyPassword() {
 }
 
 function add() {
-  document.querySelector('#modify').classList.add('show')
   modifyFunction = coconut.addEntry.bind(coconut)
+  document.forms.modify.classList.add('show')
 }
 
 function edit(hash) {
-  document.querySelector('#modify').classList.add('show')
+  let form = document.forms.modify
+
+  let entry = coconut.get(hash).value
+  form.service.value = entry.service
+  form.username.value = entry.username
+  form.password.value = entry.password
+  form.url.value = entry.url
+  form.notes.value = entry.notes
+
   modifyFunction = coconut.updateEntry.bind(coconut, hash)
+  form.classList.add('show')
 }
 
 function remove(hash) {

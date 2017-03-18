@@ -93,7 +93,7 @@ function doModify(form) {
   modifyFunction(
     form.service.value,
     form.username.value,
-    form.password.value,
+    form.password.value || utils.generatePassword(50),
     form.url.value,
     form.notes.value
   ).then(modified)

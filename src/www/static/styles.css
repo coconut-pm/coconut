@@ -1,4 +1,5 @@
-body:not(.open) ul, body:not(.open) #add, #entry:not(.show), #modify:not(.show) {
+body:not(.open) ul, body:not(.open) #add, #entry:not(.show), #modify:not(.show),
+        body.open #login {
     display: none;
 }
 

@@ -41,7 +41,6 @@ function getLocalHash() {
 }
 
 function loggedIn() {
-  document.querySelector('#incorrectPassword').textContent = ''
   list()
   document.querySelector('body').classList.add('open')
 }
@@ -98,8 +97,7 @@ function doModify(form) {
     form.url.value,
     form.notes.value
   ).then(modified)
-  document.querySelector('#modify').classList.remove('show')
-  form.reset()
+  closeModify()
 
   return false
 }
@@ -117,6 +115,16 @@ function show(hash) {
   document.querySelector('#url').textContent = entry.url
   document.querySelector('#notes').textContent = entry.notes
   document.querySelector('#password').value = entry.password
+}
+
+function closeEntry() {
+  document.querySelector('#entry').classList.remove('show')
+}
+
+function closeModify() {
+  let modify = document.querySelector('#modify')
+  modify.classList.remove('show')
+  modify.reset()
 }
 
 function setServer(form) {

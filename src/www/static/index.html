@@ -17,36 +17,38 @@
 </head>
 <body>
     <form name="server" onsubmit="return setServer(this)">
-        <input type="url" name="server" />
-        <input type="submit" value="Save" />
+        <label for="server">Server</label>
+        <input type="url" name="server" id="server" onblur="setServer(this.form)" placeholder="http://coconut.example.com" />
     </form>
 
-    <form onsubmit="return passwordEntered(this)">
+    <form id="login" onsubmit="return passwordEntered(this)">
+        <label for="loginPassword">Master password</label>
+        <input type="password" name="password" id="loginPassword" autofocus="autofocus" />
         <span id="incorrectPassword"></span>
-        <input type="password" name="password" />
-        <input type="submit" value="Please open my coconut" />
     </form>
 
     <ul>
     </ul>
 
     <div id="entry">
+        <a href="#" id="close" onclick="closeEntry()">✕</a>
         <div>Service: <span id="service"></span></div>
         <div>Username: <span id="username"></span></div>
         <div>URL: <span id="url"></span></div>
         <div>Notes: <span id="notes"></span></div>
         <input type="text" id="password" />
-        <a href="#" onclick="copyPassword()">Copy password</a>
+        <input type="button" onclick="copyPassword()" value="Copy password" />
     </div>
 
     <a id="add" href="#" onclick="add()" />+</a>
     <form id="modify" name="modify" onsubmit="return doModify(this)">
+        <a href="#" id="close" onclick="closeModify()">✕</a>
         <input type="text" name="service" placeholder="Service" />
         <input type="text" name="username" placeholder="Username" />
         <input type="password" name="password" placeholder="Password" />
         <input type="url" name="url" placeholder="URL" />
         <input type="text" name="notes" placeholder="Notes" />
-        <input type="submit" value="Go!" />
+        <input type="submit" value="Save" />
     </form>
 </body>
 </html>

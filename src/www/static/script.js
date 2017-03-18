@@ -62,10 +62,7 @@ function list() {
 }
 
 function listItem(entry) {
-  let title = `<a href="#" onclick="show(\'${entry.hash}\')">${entry.value.service}</a>`
-  let edit = `<a href="#" onclick="edit(\'${entry.hash}\')">✎</a>`
-  let remove = `<a href="#" onclick="remove(\'${entry.hash}\')">✖</a>`
-  return `<li>${title} ${edit} ${remove}</li>`
+  return `<li><a href="#" onclick="show(\'${entry.hash}\')">${entry.value.service}</a></li>`
 }
 
 function copyPassword() {
@@ -77,6 +74,7 @@ function copyPassword() {
 
 function add() {
   modifyFunction = coconut.addEntry.bind(coconut)
+  closeEntry()
   document.forms.modify.classList.add('show')
 }
 
@@ -91,11 +89,13 @@ function edit(hash) {
   form.notes.value = entry.notes
 
   modifyFunction = coconut.updateEntry.bind(coconut, hash)
+  closeEntry()
   form.classList.add('show')
 }
 
 function remove(hash) {
   coconut.remove(hash)
+    .then(closeEntry)
     .then(modified)
 }
 
@@ -118,13 +118,16 @@ function modified() {
 }
 
 function show(hash) {
-  document.querySelector('#entry').classList.add('show')
+  document.querySelector('#edit').onclick = edit.bind(this, hash)
+  document.querySelector('#delete').onclick = remove.bind(this, hash)
+
   let entry = coconut.get(hash).value
   document.querySelector('#service').textContent = entry.service
   document.querySelector('#username').textContent = entry.username
   document.querySelector('#url').textContent = entry.url
   document.querySelector('#notes').textContent = entry.notes
   document.querySelector('#password').value = entry.password
+  document.querySelector('#entry').classList.add('show')
 }
 
 function closeEntry() {

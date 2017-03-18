@@ -3,6 +3,7 @@
 <head>
     <title>Coconut</title>
     <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
     <script src="modules/ipfs-api/dist/index.js"></script>
     <script src="modules/orbit-db/dist/orbitdb.min.js"></script>
     <script src="modules/crypto-js/crypto-js.js"></script>
@@ -16,41 +17,53 @@
     <script src="script.js"></script>
 </head>
 <body>
-    <form name="server" onsubmit="return setServer(this)">
-        <label for="server">Server</label>
-        <input type="url" name="server" id="server" onblur="setServer(this.form)" placeholder="http://coconut.example.com" />
-    </form>
+    <div id="main">
+        <form name="server" onsubmit="return setServer(this)">
+            <label for="server">Server</label>
+            <input type="url" name="server" id="server" onblur="setServer(this.form)" placeholder="http://coconut.example.com" />
+        </form>
 
-    <form id="login" onsubmit="return passwordEntered(this)">
-        <label for="loginPassword">Master password</label>
-        <input type="password" name="password" id="loginPassword" autofocus="autofocus" />
-        <span id="incorrectPassword"></span>
-    </form>
+        <form id="login" onsubmit="return passwordEntered(this)">
+            <label for="masterPassword">Master password</label>
+            <input type="password" name="password" id="masterPassword" autofocus="autofocus" />
+            <span id="incorrectPassword"></span>
+        </form>
 
-    <ul>
-    </ul>
+        <input type="text" id="search" placeholder="Search..." oninput="search(this)" />
 
-    <div id="entry">
-        <a href="#" id="close" onclick="closeEntry()">✕</a>
-        <a href="#" id="edit">Edit</a>
-        <a href="#" id="delete">Delete</a>
-        <div>Service: <span id="service"></span></div>
-        <div>Username: <span id="username"></span></div>
-        <div>URL: <span id="url"></span></div>
-        <div>Notes: <span id="notes"></span></div>
-        <input type="text" id="password" />
-        <input type="button" onclick="copyPassword()" value="Copy password" />
+        <div id="content">
+            <ul>
+            </ul>
+
+            <a id="add" href="#" onclick="add()" />+ Add new</a>
+
+            <div id="entry">
+                <a href="#" id="close" onclick="closeEntry()">Close</a>
+                <a href="#" id="edit">Edit</a>
+                <a href="#" id="delete">Delete</a>
+                <div>Service: <span id="service"></span></div>
+                <div>Username: <span id="username"></span></div>
+                <div>URL: <span id="url"></span></div>
+                <div>Notes: <span id="notes"></span></div>
+                <input type="text" id="password" />
+                <a href="#" onclick="copyPassword()">Copy password</a>
+            </div>
+
+            <form id="modify" name="modify" onsubmit="return doModify(this)">
+                <label for="service_new">Service</label>
+                <input type="text" name="service" id="service_new" placeholder="Service" />
+                <label for="username_new">Username</label>
+                <input type="text" name="username" id="username_new" placeholder="Username" />
+                <label for="password_new">Password (empty will autogenerate)</label>
+                <input type="password" name="password" id="password_new" placeholder="Password" />
+                <label for="url_new">URL</label>
+                <input type="url" name="url" id="url_new" placeholder="URL" />
+                <label for="notes_new">Notes</label>
+                <input type="text" name="notes" id="notes_new" placeholder="Notes" />
+                <input type="submit" value="Save" />
+                <a href="#" onclick="closeModify()">Cancel</a>
+            </form>
+        </div>
     </div>
-
-    <a id="add" href="#" onclick="add()" />+</a>
-    <form id="modify" name="modify" onsubmit="return doModify(this)">
-        <a href="#" id="close" onclick="closeModify()">✕</a>
-        <input type="text" name="service" placeholder="Service" />
-        <input type="text" name="username" placeholder="Username" />
-        <input type="password" name="password" placeholder="Password" />
-        <input type="url" name="url" placeholder="URL" />
-        <input type="text" name="notes" placeholder="Notes" />
-        <input type="submit" value="Save" />
-    </form>
 </body>
 </html>

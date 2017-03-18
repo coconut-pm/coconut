@@ -41,8 +41,10 @@ function getLocalHash() {
 }
 
 function loggedIn() {
-  list()
+  listEntries()
   document.querySelector('body').classList.add('open')
+  document.querySelector('#add').classList.add('show')
+  document.querySelector('#search').focus()
 }
 
 function updateHash() {
@@ -56,12 +58,12 @@ function updateHash() {
   }
 }
 
-function list() {
+function listEntries(entries = coconut.entries) {
   document.querySelector('ul').innerHTML =
-    `${coconut.entries.map(listItem).join('\n')}`
+    `${entries.map(listEntry).join('\n')}`
 }
 
-function listItem(entry) {
+function listEntry(entry) {
   return `<li><a href="#" onclick="show(\'${entry.hash}\')">${entry.value.service}</a></li>`
 }
 
@@ -75,6 +77,7 @@ function copyPassword() {
 function add() {
   modifyFunction = coconut.addEntry.bind(coconut)
   closeEntry()
+  document.querySelector('#add').classList.remove('show')
   document.forms.modify.classList.add('show')
 }
 
@@ -90,6 +93,7 @@ function edit(hash) {
 
   modifyFunction = coconut.updateEntry.bind(coconut, hash)
   closeEntry()
+  document.querySelector('#add').classList.remove('show')
   form.classList.add('show')
 }
 
@@ -114,10 +118,13 @@ function doModify(form) {
 
 function modified() {
   updateHash()
-  list()
+  listEntries()
 }
 
 function show(hash) {
+  closeModify()
+  document.querySelector('#add').classList.remove('show')
+
   document.querySelector('#edit').onclick = edit.bind(this, hash)
   document.querySelector('#delete').onclick = remove.bind(this, hash)
 
@@ -131,18 +138,30 @@ function show(hash) {
 }
 
 function closeEntry() {
-  document.querySelector('#entry').classList.remove('show')
+  let entry = document.querySelector('#entry')
+  if (entry.classList.contains('show')) {
+    entry.classList.remove('show')
+    document.querySelector('#add').classList.add('show')
+  }
 }
 
 function closeModify() {
   let modify = document.querySelector('#modify')
-  modify.classList.remove('show')
-  modify.reset()
+  if (modify.classList.contains('show')) {
+    modify.classList.remove('show')
+    modify.reset()
+    document.querySelector('#add').classList.add('show')
+  }
 }
 
 function setServer(form) {
   localStorage.setItem('server', form.server.value)
   return false
+}
+
+function search(input) {
+  let entries = coconut.search(input.value)
+  listEntries(entries)
 }
 
 // vim: sw=2

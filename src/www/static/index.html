@@ -17,7 +17,7 @@
     <script src="script.js"></script>
 </head>
 <body>
-    <div id="main">
+    <div id="top">
         <form name="server" onsubmit="return setServer(this)">
             <label for="server">Server</label>
             <input type="url" name="server" id="server" onblur="setServer(this.form)" placeholder="http://coconut.example.com" />
@@ -26,12 +26,14 @@
         <form id="login" onsubmit="return passwordEntered(this)">
             <label for="masterPassword">Master password</label>
             <input type="password" name="password" id="masterPassword" autofocus="autofocus" />
-            <span id="incorrectPassword"></span>
+            <span id="error"></span>
         </form>
 
         <input type="text" id="search" placeholder="Search..." oninput="search(this)" />
+    </div>
 
-        <div id="content">
+    <div id="content">
+        <div id="centered">
             <ul>
             </ul>
 

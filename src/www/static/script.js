@@ -10,8 +10,12 @@ function passwordEntered(form) {
   getHash()
     .then(coconut.connect.bind(coconut))
     .then(loggedIn)
-    .catch(() => {
-      document.querySelector('#incorrectPassword').textContent = 'Wrong password'
+    .catch(error => {
+      if (error.message === 'Failed to fetch') {
+        document.querySelector('#error').textContent = 'Not connected to IPFS'
+      } else {
+        document.querySelector('#error').textContent = 'Wrong password'
+      }
     })
 
   return false
@@ -44,6 +48,7 @@ function loggedIn() {
   listEntries()
   document.querySelector('body').classList.add('open')
   document.querySelector('#add').classList.add('show')
+  document.querySelector('ul').classList.add('show')
   document.querySelector('#search').focus()
 }
 
@@ -78,6 +83,7 @@ function add() {
   modifyFunction = coconut.addEntry.bind(coconut)
   closeEntry()
   document.querySelector('#add').classList.remove('show')
+  document.querySelector('ul').classList.remove('show')
   document.forms.modify.classList.add('show')
 }
 
@@ -94,6 +100,7 @@ function edit(hash) {
   modifyFunction = coconut.updateEntry.bind(coconut, hash)
   closeEntry()
   document.querySelector('#add').classList.remove('show')
+  document.querySelector('ul').classList.remove('show')
   form.classList.add('show')
 }
 
@@ -150,6 +157,7 @@ function closeModify() {
   if (modify.classList.contains('show')) {
     modify.classList.remove('show')
     modify.reset()
+    document.querySelector('ul').classList.add('show')
     document.querySelector('#add').classList.add('show')
   }
 }

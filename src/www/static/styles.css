@@ -8,7 +8,7 @@
 
 body:not(.open) ul, body:not(.open) #add, body:not(.open) #search,
         #entry:not(.show), #modify:not(.show), #add:not(.show),
-        body.open #login {
+        body.open #login, ul:not(.show) {
     display: none;
 }
 
@@ -22,11 +22,19 @@ a:hover {
     background: var(--blue);
 }
 
-#main {
-    position: absolute;
-    margin-top: 1.8em;
-    left: 50%;
-    transform: translateX(-50%);
+#top {
+    position: relative;
+    width: 320px;
+    margin: 0 auto;
+}
+
+#content {
+    text-align: center;
+}
+
+#content #centered {
+    display: inline-block;
+    text-align: left;
 }
 
 label, input {
@@ -34,7 +42,7 @@ label, input {
 }
 
 #masterPassword, label[for='masterPassword'], #search, #server,
-        label[for='server'], #incorrectPassword {
+        label[for='server'], #error {
     line-height: 1.8em;
     font-size: 1.5em;
     color: var(--blue);
@@ -52,7 +60,7 @@ label, input {
     width: 100%;
 }
 
-#incorrectPassword {
+#error {
     display: block;
     margin-top: 0.5em;
     color: darkred;
@@ -75,17 +83,11 @@ label, input {
     overflow: hidden;
 }
 
-#add {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
 ul, #add, #entry, #modify {
-    float: left;
+    display: inline-block;
     padding: 0.5em;
-    padding-left: 1em;
+    margin-left: 1em;
+    vertical-align: middle;
 }
 
 ul {

@@ -114,7 +114,7 @@ function doModify(form) {
   modifyFunction(
     form.service.value,
     form.username.value,
-    form.password.value || utils.generatePassword(50),
+    form.password.value || PasswordGenerator.generatePassword({ length: 50 }),
     form.url.value,
     form.notes.value
   ).then(modified)

@@ -28,6 +28,7 @@
     "multihashes": "^0.4.3",
     "node-persist": "^2.0.10",
     "orbit-db": "latest",
+    "password-generator-js": "^1.0.1",
     "prompt": "^1.0.0",
     "request": "^2.79.0",
     "serve-static": "^1.12.1",

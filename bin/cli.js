@@ -7,6 +7,7 @@ const fs = require('fs'),
       prompt = require('prompt'),
       clipboard = require('clipboardy'),
       multihash = require('multihashes'),
+      PasswordGenerator = require('password-generator-js'),
       packageJson = require('../package.json'),
       Coconut = require('../src/core/coconut'),
       utils = require('../src/core/utils'),
@@ -213,7 +214,8 @@ function get(coconut, entry) {
 
 function add(coconut) {
   promptHandler(prompts.add, (err, result) => {
-    result.password = result.password || utils.generatePassword(PASSWORD_LENGTH)
+    result.password = result.password
+      || PasswordGenerator.generatePassword({ length: PASSWORD_LENGTH })
     coconut.addEntry(result.service, result.username, result.password,
         result.url, result.notes)
       .then(() => writeHash(coconut.hash))
@@ -235,7 +237,8 @@ function remove(coconut, entry) {
 function update(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
   promptHandler(prompts.add, (err, result) => {
-    result.password = result.password || utils.generatePassword(PASSWORD_LENGTH)
+    result.password = result.password
+      || PasswordGenerator.generatePassword({ length: PASSWORD_LENGTH })
     promptHandler(prompts.update, (err2, result2) => {
       if (result2.confirm.toLowerCase() === 'y') {
         coconut.updateEntry(entry.hash, result.service, result.username, result.password,

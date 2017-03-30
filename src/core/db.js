@@ -8,6 +8,7 @@ if (typeof window === 'undefined') {
 
 class DB {
   constructor(password = mandatory(), ipfs = new IpfsApi()) {
+    this.ipfs = ipfs
     this.key = Encryption.expandKey(password)
     this.passwordHash = CryptoJS.SHA3(password).toString()
 
@@ -18,15 +19,29 @@ class DB {
     })
   }
 
+  connectedToIpfs() {
+    return this.ipfs.config.get()
+      .then(() => Promise.resolve())
+      .catch(() => Promise.reject('Not connected to IPFS.'))
+  }
+
   connect(hash = mandatory()) {
     if (this._hash) {
-      throw Error('You can not connect when db has been initialized.')
+      throw 'You can not connect when db has been initialized.'
     }
     this._hash = hash
-    return this.store.sync(hash)
-      .then(() => {
-        return this.entries
+
+    return new Promise((resolve, reject) => {
+      this.store.events.on('history', () => {
+        try {
+          resolve(this.entries)
+        } catch (e) {
+          reject(e)
+        }
       })
+      this.store.sync(hash)
+      setTimeout(() => resolve(), 5000)
+    })
   }
 
   _add(entry = mandatory()) {

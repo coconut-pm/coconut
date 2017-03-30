@@ -6,11 +6,9 @@ const fs = require('fs'),
       program = require('commander'),
       prompt = require('prompt'),
       clipboard = require('clipboardy'),
-      multihash = require('multihashes'),
       PasswordGenerator = require('password-generator-js'),
       packageJson = require('../package.json'),
       Coconut = require('../src/core/coconut'),
-      utils = require('../src/core/utils'),
       serverCommunication = require('../src/core/serverCommunication'),
       prompts = require('../src/cli/prompts.json')
 
@@ -21,125 +19,121 @@ const PASSWORD_LENGTH = 50
 
 let passwordHash;
 
-function openCoconut(config, callback) {
-  promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
-    let coconut = new Coconut(masterPassword)
-    passwordHash = coconut.passwordHash
-    syncHash(config, () => {
-      coconut.connect(config.hash)
-        .then(() => {
-          callback(coconut)
-        }).catch((err) => console.error(err.message))
+function getHash(passwordHash, required) {
+  return getRemoteHash(passwordHash)
+    .catch(() => getLocalHash())
+    .catch(() => {
+      if (required) {
+        exit('Coconut is not initialized. \nRun \'coconut add\' to get started.')
+      } else {
+        return Promise.reject('No hash, but it is okay..')
+      }
+    })
+}
+
+function getRemoteHash(passwordHash) {
+  return readConfig()
+    .then(({ server }) => server || Promise.reject('No remote hash'))
+    .then(server => serverCommunication.get(server, passwordHash))
+    .then(hash => { console.log('getRemote:', hash); return hash })
+    .then(hash => writeHash(hash, true))
+}
+
+function getLocalHash() {
+  return readConfig()
+    .then(({ hash }) => hash || Promise.reject('No local hash'))
+}
+
+function sync(coconut, hash) {
+  return coconut.connect(hash)
+    .catch(error => exit(error, 2))
+}
+
+function openCoconut(required) {
+  let coconut
+  return promptHandler(prompts.masterPassword)
+    .then(({ masterPassword }) => coconut = new Coconut(masterPassword))
+    .then(() => passwordHash = coconut.passwordHash)
+    .then(() => coconut.connectedToIpfs())
+    .catch(error => exit(error, 1))
+    .then(() => getHash(coconut.passwordHash, required))
+    .then(hash => sync(coconut, hash))
+    .catch(() => {})
+    .then(() => coconut)
+}
+
+function readConfig() {
+  return new Promise((resolve, reject) => {
+    fs.readFile(CONFIG_FILE, (error, data) => {
+      if (error) {
+        let config = {}
+        writeConfig(config)
+        resolve(config)
+      } else {
+        resolve(JSON.parse(data.toString()))
+      }
     })
   })
 }
 
-function openDB(callback) {
-  safeReadConfig(config => openCoconut(config, callback))
+function writeHash(hash, avoidSync) {
+  console.log('setHash:', hash)
+  let config
+  readConfig()
+    .then(_config => config = Object.assign(_config, { hash }))
+    .then(writeConfig)
+    .then(() => config.server && !avoidSync ? Promise.resolve() : Promise.reject())
+    .then(() => serverCommunication.post(config.server, passwordHash, hash))
+    .catch(() => {})
+    .then(() => hash)
 }
 
-function openOrCreateDB(callback) {
-  readConfig((err, config) => {
-    if(err) {
-      promptHandler(prompts.masterPassword, (error, { masterPassword }) => {
-        let coconut = new Coconut(masterPassword)
-        passwordHash = coconut.passwordHash
-        callback(coconut)
-      })
-    } else {
-      openCoconut(config, callback)
-    }
-  })
-}
-
-function syncHash(config, callback) {
-  if (config.server) {
-    serverCommunication.get(config.server, passwordHash)
-      .then(hash => {
-        writeHash(hash, () => {
-          callback()
-        })
-      }).catch(callback)
-  } else {
-    callback()
-  }
-}
-
-function readConfig(callback) {
-  fs.readFile(CONFIG_FILE, (error, data) => {
-    if (error) {
-      callback(error)
-    } else {
-      let config = JSON.parse(data.toString())
-      callback(null, config)
-    }
-  })
-}
-
-function safeReadConfig(callback) {
-  readConfig((err, config) => {
-    if (err) {
-      console.log('Coconut is not initialized. \nRun \'coconut add\' to get started.')
-      process.exit()
-    }
-    callback(config)
-  })
-}
-
-
-function writeHash(hash, callback, avoidSync) {
-  readConfig((err, config) => {
-    if (err) {
-      config = {}
-    }
-    config.hash = hash
-    writeConfig(config, callback)
-    if (config.server && !avoidSync) {
-      serverCommunication.post(config.server, passwordHash, hash)
-    }
-  })
-}
-
-function addServer(address) {
-  readConfig((err, config) => {
-    if (err) {
-      config = {}
-    }
-    config.server = address
-    writeConfig(config)
-  })
+function addServer(server) {
+  readConfig()
+    .then(config => Object.assign(config, { server }))
+    .then(writeConfig)
 }
 
 function removeServer() {
-  safeReadConfig(config => {
-    delete config.server
-    writeConfig(config)
-  })
+  readConfig()
+    .then(config => {
+      delete config.server
+      writeConfig(config)
+    })
 }
 
 function printServer() {
-  safeReadConfig(config => {
-    console.log(config.server || 'You have not connected to a server yet.')
+  readConfig()
+    .then(({ server }) => console.log(server
+          || 'You have not connected to a server yet.'))
+}
+
+function writeConfig(config) {
+  return new Promise((resolve, reject) => {
+    config = JSON.stringify(config)
+    fs.writeFile(CONFIG_FILE, config, (error, result) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(config)
+      }
+    })
   })
 }
 
-function writeConfig(config, callback) {
-  callback = callback || (error => error && console.error(error))
-  config = JSON.stringify(config)
-  fs.writeFile(CONFIG_FILE, config, callback)
-}
-
-function promptHandler(questions, callback) {
-  prompt.get(questions, (error, result) => {
-    if (error) {
-      if (error.message === 'canceled') {
-        process.exit()
+function promptHandler(questions) {
+  return new Promise((resolve, reject) => {
+    prompt.get(questions, (error, result) => {
+      if (error) {
+        if (error.message === 'canceled') {
+          process.exit()
+        } else {
+          reject(error.message)
+        }
       } else {
-        console.error(error.message)
+        resolve(result)
       }
-    } else {
-      callback(error, result)
-    }
+    })
   })
 }
 
@@ -176,33 +170,33 @@ function search(coconut, query, options) {
   printEntries(results, true)
 
   if (results.length) {
-    pickOne(results, entry => {
-      if (options.delete) {
-        remove(coconut, entry)
-      } else if (options.update) {
-        update(coconut, entry)
-      } else {
-        get(coconut, entry)
-      }
-    })
+    pickOne(results)
+      .then(entry => {
+        if (options.delete) {
+          remove(coconut, entry)
+        } else if (options.update) {
+          update(coconut, entry)
+        } else {
+          get(coconut, entry)
+        }
+      }).catch(console.error.bind(console))
   } else {
     console.error('No results for your query')
   }
 }
 
-function pickOne(entries, callback) {
-  if (!entries.length) {
-    callback()
-  } else if (entries.length === 1) {
-    callback(entries[0])
+function pickOne(entries) {
+  if (entries.length === 1) {
+    return Promise.resolve(entries[0])
   } else {
-    promptHandler(prompts.number, (err, result) => {
-      if (result.number >= entries.length) {
-        console.error('No such entry')
-      } else {
-        callback(entries[result.number])
-      }
-    })
+    return promptHandler(prompts.number)
+      .then(result => {
+        if (result.number >= entries.length) {
+          return Promise.reject('No such entry')
+        } else {
+          return entries[result.number]
+        }
+      })
   }
 }
 
@@ -213,41 +207,49 @@ function get(coconut, entry) {
 }
 
 function add(coconut) {
-  promptHandler(prompts.add, (err, result) => {
-    result.password = result.password
-      || PasswordGenerator.generatePassword({ length: PASSWORD_LENGTH })
-    coconut.addEntry(result.service, result.username, result.password,
-        result.url, result.notes)
-      .then(() => writeHash(coconut.hash))
-      .catch(error => console.error(error.message))
-  })
+  return promptHandler(prompts.add)
+    .then(result => {
+      result.password = result.password
+        || PasswordGenerator.generatePassword({ length: PASSWORD_LENGTH })
+      return coconut.addEntry(result.service, result.username, result.password,
+          result.url, result.notes)
+    }).then(() => writeHash(coconut.hash))
 }
 
 function remove(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
   printEntries(entry, false, true)
-  promptHandler(prompts.deleteConfirm, (err, result) => {
-    if (result.deleteConfirm.toLowerCase() == "y") {
-      coconut.remove(entry.hash)
-        .then(() => writeHash(coconut.hash))
-    }
-  })
+  return promptHandler(prompts.deleteConfirm)
+    .then(result => result.deleteConfirm.toLowerCase() == "y" || Promise.reject())
+    .then(() => coconut.remove(entry.hash))
+    .catch(() => {})
+    .then(() => writeHash(coconut.hash))
 }
 
 function update(coconut, entry) {
   entry = Number.isInteger(entry) ? coconut.entries[entry] : entry
-  promptHandler(prompts.add, (err, result) => {
-    result.password = result.password
-      || PasswordGenerator.generatePassword({ length: PASSWORD_LENGTH })
-    promptHandler(prompts.update, (err2, result2) => {
-      if (result2.confirm.toLowerCase() === 'y') {
-        coconut.updateEntry(entry.hash, result.service, result.username, result.password,
-            result.url, result.notes)
-          .then(() => writeHash(coconut.hash))
-          .catch(error => console.error(error.message))
-      }
-    })
-  })
+  let result
+  return promptHandler(prompts.add)
+    .then(_result => {
+      _result.password = _result.password
+        || PasswordGenerator.generatePassword({ length: PASSWORD_LENGTH })
+      result = _result
+    }).then(() => promptHandler(prompts.update))
+    .then(result => result.confirm.toLowerCase() == "y" || Promise.reject())
+    .then(() => coconut.updateEntry(entry.hash, result.service, result.username,
+          result.password, result.url, result.notes))
+    .catch(() => {})
+    .then(() => writeHash(coconut.hash))
+}
+
+function handleError(error) {
+  error = error.message || error
+  console.error(error)
+}
+
+function exit(error, exitCode) {
+  handleError(error)
+  process.exit(exitCode)
 }
 
 program
@@ -256,7 +258,11 @@ program
 program
   .command('list')
   .description('List of all entries')
-  .action(() => openDB(listEntries));
+  .action(() => {
+    openCoconut(true)
+      .then(listEntries)
+      .catch(handleError)
+  })
 
 program
   .command('search <query>')
@@ -264,13 +270,19 @@ program
   .option('-d, --delete', 'Delete the entry from the search')
   .option('-u, --update', 'Update the entry from the search')
   .action((query, options) => {
-    openDB(coconut => search(coconut, query, options))
+    openCoconut(true)
+      .then(coconut => search(coconut, query, options))
+      .catch(handleError)
   })
 
 program
   .command('add')
   .description('Add an entry')
-  .action(() => openOrCreateDB(add))
+  .action(() => {
+    openCoconut(false)
+      .then(add)
+      .catch(handleError)
+  })
 
 program
   .command('server')
@@ -290,7 +302,7 @@ program
 program
   .command('hash')
   .description('Get current root hash')
-  .action(() => safeReadConfig(config => console.log(config.hash)))
+  .action(() => readConfig.then(config => console.log(config.hash)))
 
 program.parse(process.argv)
 

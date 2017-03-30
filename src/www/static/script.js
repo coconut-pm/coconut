@@ -40,7 +40,7 @@ function getLocalHash() {
   if (hash) {
     return hash
   } else {
-    throw ''
+    return Promise.reject()
   }
 }
 

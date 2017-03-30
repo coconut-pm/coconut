@@ -4,32 +4,29 @@ if (typeof window === 'undefined') {
 
 class Coconut extends DB {
   addEntry(service, username, password, url, notes) {
-    return new Promise((resolve, reject) => {
-      if (this.search(service).length) {
-        reject(Error('The given service already exist, use updateEntry instead.'))
-      }
-      var entry = {
-        service: service,
-        username: username,
-        password: password,
-        url: url,
-        notes: notes
-      }
-      resolve(this._add(entry))
-    })
+    if (this.search(service).length) {
+      throw 'The given service already exist, use updateEntry instead.'
+    }
+    var entry = {
+      service: service,
+      username: username,
+      password: password,
+      url: url,
+      notes: notes
+    }
+    return this._add(entry)
+      .catch(() => Promise.reject('Not connected to IPFS'))
   }
 
   updateEntry(hash = mandatory(), service, username, password, url, notes) {
-    return new Promise((resolve, reject) => {
-      var entry = this.get(hash)
-      entry.service = service || entry.service
-      entry.username = username || entry.username
-      entry.password = password || entry.password
-      entry.url = url || entry.url
-      entry.notes = notes || entry.notes
+    var entry = this.get(hash)
+    entry.service = service || entry.service
+    entry.username = username || entry.username
+    entry.password = password || entry.password
+    entry.url = url || entry.url
+    entry.notes = notes || entry.notes
 
-      resolve(this._update(hash, entry))
-    })
+    return this._update(hash, entry)
   }
 
   search(query) {
@@ -39,7 +36,6 @@ class Coconut extends DB {
   _searchFilter(query) {
     return entry => entry.value.service.indexOf(query) != -1
   }
-
 }
 
 if (typeof window === 'undefined') {

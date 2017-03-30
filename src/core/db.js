@@ -40,6 +40,7 @@ class DB {
         }
       })
       this.store.sync(hash)
+        .catch(reject)
       setTimeout(() => resolve(), 5000)
     })
   }

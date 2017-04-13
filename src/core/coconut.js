@@ -7,13 +7,7 @@ class Coconut extends DB {
     if (this.search(service).length) {
       throw 'The given service already exist, use updateEntry instead.'
     }
-    var entry = {
-      service: service,
-      username: username,
-      password: password,
-      url: url,
-      notes: notes
-    }
+    var entry = { service, username, password, url, notes }
     return this._add(entry)
       .catch(() => Promise.reject('Not connected to IPFS'))
   }

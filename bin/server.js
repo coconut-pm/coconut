@@ -4,12 +4,10 @@ const express = require('express'),
       bodyParser = require('body-parser'),
       fs = require('fs'),
       path = require('path'),
-      request = require('request'),
       IpfsAPI = require('ipfs-api'),
       storage = require('node-persist'),
-      cors = require('cors')
-
-const DB_NAME = 'coconut'
+      cors = require('cors'),
+      serverCommunication = require('../src/core/serverCommunication')
 
 const app = express()
 const ipfs = new IpfsAPI()
@@ -36,7 +34,9 @@ app.post('/', (req, res) => {
   let hash = req.body.hash
   setTimeout(storage.setItemSync.bind(storage, password, hash))
   pinObjects(hash)
-  sendToServers(password, hash)
+  servers.forEach(server => {
+    serverCommunication.post(server, password, hash)
+  })
   res.end()
 })
 
@@ -44,24 +44,13 @@ app.listen(9000, () => {
   console.log('Server running on port 9000.')
 })
 
-function sendToServers(password, hash) {
-  servers.forEach(server => {
-    request.post(server).form({ hash, password })
-  })
-}
-
 function pinObjects(hash) {
-  ipfs.pin.add(hash)
-  ipfs.object.get(hash).then(node => {
-    pinRecursive(JSON.parse(node._data).items[0])
-  })
-}
-
-function pinRecursive(hash) {
   if (hash) {
     ipfs.pin.add(hash)
     ipfs.object.get(hash).then(node => {
-      pinRecursive(JSON.parse(node._data).next[0])
+      let data = JSON.parse(node._data)
+      let next = data.items || data.next
+      pinObjects(next[0])
     })
   }
 }

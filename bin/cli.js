@@ -197,18 +197,21 @@ program
 
 program
   .command('server')
+  .option('-l, --list', 'Show server address')
   .option('-s, --set <address>', 'Set a server to sync with')
   .option('-r, --remove', 'Remove a server')
   .description('Handle server')
-  .action(options => {
-    if (options.set) {
+  .action(function(options) {
+    if (options.list) {
+      ConfigHandler.printServer()
+        .then(console.log.bind(console))
+        .catch(handleError)
+    } else if (options.set) {
       ConfigHandler.addServer(options.set)
     } else if (options.remove) {
       ConfigHandler.removeServer()
     } else {
-      ConfigHandler.printServer()
-        .then(console.log.bind(console))
-        .catch(handleError)
+      this.outputHelp()
     }
   })
 

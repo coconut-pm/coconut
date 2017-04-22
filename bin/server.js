@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
       .then(res.send.bind(res))
       .catch(error => console.error(error.message))
   } else {
-    res.sendFile(path.resolve('src/www/resources/coconut.svg'))
+    res.sendFile(path.resolve('src/resources/coconut.svg'))
   }
 })
 

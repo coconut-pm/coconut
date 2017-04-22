@@ -64,7 +64,7 @@ class ConfigHandler {
 
   writeHash(passwordHash, hash, avoidSync) {
     let config
-    this.readConfig()
+    return this.readConfig()
       .then(_config => config = Object.assign(_config, { hash }))
       .then(() => this.writeConfig(config))
       .then(() => config.server && !avoidSync ? Promise.resolve() : Promise.reject())

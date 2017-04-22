@@ -37,9 +37,15 @@ class DB {
 
     return new Promise((resolve, reject) => {
       let clear = clearTimeout.bind(global, setTimeout(resolve, 5000))
-      this.store.events.on('history', () => clear() & resolve(this.entries))
+      this.store.events.on('history', () => {
+        clear()
+        resolve(this.entries)
+      })
       this.store.sync(hash)
-        .catch((...a) => clear() & reject(...a))
+        .catch((...a) => {
+          clear()
+          reject(...a)
+        })
     })
   }
 

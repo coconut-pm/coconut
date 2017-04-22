@@ -23,7 +23,7 @@ function openCoconut(required) {
     .catch(error => exit(error, 1))
     .then(() => ConfigHandler.getHash(passwordHash, required))
     .then(hash => sync(coconut, hash))
-    .catch(() => {})
+    //.catch(() => {})
     .then(() => coconut)
 }
 
@@ -151,16 +151,6 @@ function update(coconut, entry) {
           result.password, result.url, result.notes))
     .catch(() => {})
     .then(() => ConfigHandler.writeHash(passwordHash, coconut.hash))
-}
-
-function handleError(error) {
-  error = error.message || error
-  console.error(error)
-}
-
-function exit(error, exitCode) {
-  handleError(error)
-  process.exit(exitCode)
 }
 
 program

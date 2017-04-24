@@ -212,6 +212,15 @@ program
       .then(hash => console.log(hash))
       .catch(handleError))
 
+program
+  .command('raw')
+  .description('Print stored contents including passwords as json')
+  .action(function() {
+    openCoconut(true)
+      .then(coconut => console.log(coconut.entries.map(entry => entry.value)))
+      .catch(handleError)
+  })
+
 program.parse(process.argv)
 
 if (!process.argv.slice(2).length) {

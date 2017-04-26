@@ -50,11 +50,13 @@ class DB {
   }
 
   _add(entry = mandatory()) {
+    this.cachedEntries = null
     let encEntry = Encryption.encryptJson(entry, this.key)
     return this.store.add(encEntry)
   }
 
   remove(hash = mandatory()) {
+    this.cachedEntries = null
     if (this.get(hash)) {
       return this.store.remove(hash)
     } else {
@@ -80,9 +82,12 @@ class DB {
   }
 
   get entries() {
-    return this.store.iterator({ limit: -1 })
-      .collect()
-      .map(this._get.bind(this))
+    if (!this.cachedEntries) {
+      this.cachedEntries = this.store.iterator({ limit: -1 })
+        .collect()
+        .map(this._get.bind(this))
+    }
+    return this.cachedEntries
   }
 
   _decrypt(e) {

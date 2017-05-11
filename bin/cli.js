@@ -55,9 +55,10 @@ function printEntries(entries, withIndex, deep) {
   entries.forEach((entry, index) => {
     console.log((withIndex ? index + ': ' : '') + entry.value.service)
     if (deep) {
-      console.log('Username:', entry.value.username || '')
-      console.log('Url:', entry.value.url || '')
-      console.log('Notes:', entry.value.notes || '')
+      console.log('-----')
+      console.log('username:', entry.value.username || '')
+      console.log('link:', entry.value.url || '')
+      console.log('notes:', entry.value.notes || '')
     }
   })
 }
@@ -72,8 +73,97 @@ function copyPassword(entry) {
   }
 }
 
+function toClipboard(entry, value) {
+  if (entry.value[value]) {
+    clipboard.write(entry.value[value])
+    process.stdout.write(value + ' copied for 20s')
+    setTimeout(() => {
+      clipboard.write('')
+    }, 20000)
+  }
+}
+
 function listEntries(coconut) {
   printEntries(coconut.entries, true)
+}
+
+function continuousSearch(coconut) {
+  let query = ''
+  let pos = (x, y) => process.stdout.write('\033[' + x + ';' + y + 'H')
+  let clear = () => process.stdout.write('\033[2J\033[0f')
+  clear()
+  console.log('_.- Coconut -._')
+  console.log('Type to search')
+  console.log('-----')
+  printEntries(coconut.entries)
+  pos(2, 1)
+
+  let selected
+  let stdin = process.stdin
+  stdin.setRawMode(true)
+  stdin.resume()
+  stdin.setEncoding('utf8')
+  stdin.on('data', function (key) {
+    clear()
+    let toCopy
+    console.log('_.- Coconut -._')
+    if (selected) {
+      switch(key.charCodeAt(0)) {
+        case 3:
+        case 27:
+        case 113: // q
+          selected = null
+          clipboard.write('')
+          break
+        case 117: //u
+          toCopy = 'username'
+          break
+        case 108: //l
+          toCopy = 'url'
+          break
+        case 110: //n
+          toCopy = 'notes'
+          break
+        case 112: //p
+          toCopy = 'password'
+          break
+        //default:
+      }
+    } else {
+      switch(key.charCodeAt(0)) {
+        case 3:
+        case 27:
+          clear()
+          process.exit()
+          break
+        case 127:
+          query = query.slice(0, -1)
+          break
+        case 13:
+          selected = coconut.search(query)[0]
+          break
+        default:
+          query += key
+      }
+    }
+    if (selected) {
+      printEntries(selected, false, true)
+      console.log('password: ****')
+      let bottom = process.stdout.rows
+      pos(bottom - 1, 1)
+      console.log('Use index char to copy entry')
+      if (toCopy) {
+        toClipboard(selected, toCopy)
+      }
+      pos(bottom - 1, 1)
+    } else {
+      console.log(query)
+      console.log('-----')
+      let results = coconut.search(query)
+      printEntries(results)
+      pos(2, query.length + 1)
+    }
+  });
 }
 
 function search(coconut, query, options) {
@@ -218,6 +308,15 @@ program
   .action(function() {
     openCoconut(true)
       .then(coconut => console.log(coconut.entries.map(entry => entry.value)))
+      .catch(handleError)
+  })
+
+program
+  .command('get')
+  .description('Ui for getting passwords and metadata from accounts')
+  .action(function() {
+    openCoconut(true)
+      .then(continuousSearch)
       .catch(handleError)
   })
 
